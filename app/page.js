@@ -1,38 +1,30 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { CITIES, CITY_GROUPS } from '../lib/cities';
 
 const YEARS = Array.from({ length: 116 }, (_, i) => 2026 - i);
 const pad = (n) => String(n).padStart(2, '0');
 
 export default function Home() {
+  const router = useRouter();
   const [form, setForm] = useState({
     name: '', year: 1990, month: 1, day: 1, hour: 12, minute: 0,
     tz: 'Asia/Taipei', city: '台北市',
   });
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [going, setGoing] = useState(false);
 
   const daysInMonth = new Date(form.year, form.month, 0).getDate();
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
-  async function submit() {
-    setLoading(true); setError(''); setResult(null);
-    try {
-      const r = await fetch('/api/chart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, day: Math.min(form.day, daysInMonth) }),
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error || '排盤失敗，請確認出生資料後再試一次。');
-      setResult({ ...data, label: form.name || '我的人類圖' });
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
+  function submit() {
+    setGoing(true);
+    const q = new URLSearchParams({
+      name: form.name,
+      y: form.year, m: form.month, d: Math.min(form.day, daysInMonth),
+      h: form.hour, mi: form.minute, tz: form.tz, city: form.city,
+    });
+    router.push(`/chart?${q.toString()}`);
   }
 
   return (
@@ -108,31 +100,28 @@ export default function Home() {
           </label>
         </div>
 
-        <button className="cta" onClick={submit} disabled={loading}>
-          {loading ? '計算中…' : '生成人類圖'}
+        <button className="cta" onClick={submit} disabled={going}>
+          {going ? '計算中…' : '生成人類圖'}
         </button>
-        {error && <p className="error">{error}</p>}
         <p className="note">
           出生地決定時區換算，系統已涵蓋各地歷史夏令時間規則。不確定出生時間的話，
           可先用中午 12:00 生成，類型與內在權威通常不受影響。
         </p>
       </section>
 
-      {result && <ChartResult result={result} />}
-
       <footer className="foot">
         <a href="/transit">查看今日流日 →</a>
       </footer>
 
       <style jsx>{`
-        main { max-width: 1280px; margin: 0 auto; padding: 48px 20px 80px; }
+        main { max-width: 900px; margin: 0 auto; padding: 64px 20px 80px; }
         .hero { text-align: center; margin-bottom: 40px; }
         .eyebrow { font-size: 12px; letter-spacing: 4px; color: var(--faint); margin: 0 0 12px; }
         h1 { font-size: 42px; font-weight: 700; margin: 0 0 16px; letter-spacing: 3px; }
         .lede { color: var(--faint); line-height: 2; margin: 0; font-size: 16px; }
         .panel {
           background: var(--paper); border: 1px solid var(--line);
-          border-radius: 16px; padding: 28px; max-width: 860px; margin: 0 auto;
+          border-radius: 16px; padding: 28px;
         }
         .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
         .span2 { grid-column: span 2; }
@@ -150,7 +139,6 @@ export default function Home() {
         }
         .cta:hover { background: var(--ink); }
         .cta:disabled { opacity: .6; cursor: default; }
-        .error { color: var(--red); font-size: 14px; margin: 12px 0 0; }
         .note { font-size: 13px; color: var(--faint); line-height: 1.9; margin: 16px 0 0; }
         .foot { text-align: center; margin-top: 48px; }
         .foot a { font-size: 15px; text-decoration: none; }
@@ -158,100 +146,9 @@ export default function Home() {
         @media (max-width: 720px) {
           .grid { grid-template-columns: repeat(2, 1fr); }
           h1 { font-size: 32px; }
+          main { padding: 40px 16px 60px; }
         }
       `}</style>
     </main>
-  );
-}
-
-function ChartResult({ result }) {
-  const { svg, svgFull, summary, label } = result;
-  const wrapRef = useRef(null);
-  const [busy, setBusy] = useState(false);
-
-  async function download() {
-    setBusy(true);
-    try {
-      const src = svgFull;   // 下載版含完整摘要表
-      const img = new Image();
-      const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(src);
-      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
-      const scale = 2;
-      const cv = document.createElement('canvas');
-      cv.width = 900 * scale; cv.height = 1180 * scale;
-      const ctx = cv.getContext('2d');
-      ctx.fillStyle = '#F6F1E7';
-      ctx.fillRect(0, 0, cv.width, cv.height);
-      ctx.drawImage(img, 0, 0, cv.width, cv.height);
-      const a = document.createElement('a');
-      a.download = `${label}-人類圖.png`;
-      a.href = cv.toDataURL('image/png');
-      a.click();
-    } catch {
-      alert('下載失敗，可以改用長按或右鍵儲存圖片。');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const rows = [
-    [['類型', summary.type], ['人生角色', summary.profile], ['定義', summary.definition]],
-    [['內在權威', summary.authority], ['策略', summary.strategy], ['非自己主題', summary.notSelf]],
-  ];
-
-  return (
-    <section className="result">
-      <div className="chart" ref={wrapRef} dangerouslySetInnerHTML={{ __html: svg }} />
-
-      <aside className="side">
-        {rows.map((row, i) => (
-          <table key={i} className="info">
-            <thead><tr>{row.map(([k]) => <th key={k}>{k}</th>)}</tr></thead>
-            <tbody><tr>{row.map(([k, v]) => <td key={k}>{v}</td>)}</tr></tbody>
-          </table>
-        ))}
-        <table className="info">
-          <thead><tr><th>輪迴交叉</th></tr></thead>
-          <tbody><tr><td className="cross">{summary.cross}</td></tr></tbody>
-        </table>
-
-        <button className="dl" onClick={download} disabled={busy}>
-          {busy ? '準備中…' : '下載人類圖'}
-        </button>
-      </aside>
-
-      <style jsx>{`
-        .result {
-          margin-top: 48px; display: grid; grid-template-columns: 1.35fr .65fr;
-          gap: 32px; align-items: start;
-        }
-        .chart :global(svg) { width: 100%; height: auto; display: block; }
-        .side { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 24px; }
-        .info { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .info th {
-          background: var(--coffee); color: var(--bg);
-          font-size: 14px; font-weight: 700; letter-spacing: 3px;
-          padding: 10px 6px; border-right: 1px solid rgba(246,241,231,.45);
-        }
-        .info th:last-child { border-right: none; }
-        .info td {
-          background: var(--paper); border: 1px solid var(--line);
-          font-size: 19px; font-weight: 700; text-align: center; padding: 16px 6px;
-        }
-        .info td.cross { font-size: 17px; line-height: 1.6; }
-        .dl {
-          margin-top: 6px; padding: 14px; width: 100%;
-          background: var(--terracotta); color: #fff; border: none;
-          border-radius: 10px; font-size: 16px; font-weight: 700;
-          letter-spacing: 2px; cursor: pointer;
-        }
-        .dl:hover { background: #a85c3f; }
-        .dl:disabled { opacity: .6; cursor: default; }
-        @media (max-width: 900px) {
-          .result { grid-template-columns: 1fr; }
-          .side { position: static; }
-        }
-      `}</style>
-    </section>
   );
 }
