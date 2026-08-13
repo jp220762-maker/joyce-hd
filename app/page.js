@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { CITIES, CITY_GROUPS } from '../lib/cities';
 
 const YEARS = Array.from({ length: 116 }, (_, i) => 2026 - i);
@@ -7,7 +7,8 @@ const pad = (n) => String(n).padStart(2, '0');
 
 export default function Home() {
   const [form, setForm] = useState({
-    name: '', year: 1990, month: 1, day: 1, hour: 12, minute: 0, tz: 'Asia/Taipei',
+    name: '', year: 1990, month: 1, day: 1, hour: 12, minute: 0,
+    tz: 'Asia/Taipei', city: '台北市',
   });
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -26,7 +27,7 @@ export default function Home() {
       });
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || '排盤失敗，請確認出生資料後再試一次。');
-      setResult(data);
+      setResult({ ...data, label: form.name || '我的人類圖' });
     } catch (e) {
       setError(e.message);
     } finally {
@@ -37,7 +38,7 @@ export default function Home() {
   return (
     <main>
       <header className="hero">
-        <p className="eyebrow">人類圖 Human Design</p>
+        <p className="eyebrow">HUMAN DESIGN</p>
         <h1>你的人類圖</h1>
         <p className="lede">
           輸入出生日期、時間與地點，生成專屬人體圖。<br />
@@ -89,10 +90,13 @@ export default function Home() {
 
           <label className="field span2">
             <span>出生地</span>
-            <select value={form.tz + '|' + (form.city || '台北市')} onChange={(e) => {
-              const [tz, city] = e.target.value.split('|');
-              setForm((f) => ({ ...f, tz, city }));
-            }}>
+            <select
+              value={form.tz + '|' + form.city}
+              onChange={(e) => {
+                const [tz, city] = e.target.value.split('|');
+                setForm((f) => ({ ...f, tz, city }));
+              }}
+            >
               {CITY_GROUPS.map((g) => (
                 <optgroup key={g} label={g}>
                   {CITIES.filter((c) => c.group === g).map((c) => (
@@ -109,7 +113,8 @@ export default function Home() {
         </button>
         {error && <p className="error">{error}</p>}
         <p className="note">
-          出生地決定時區換算，系統已涵蓋各地歷史夏令時間規則。不確定出生時間的話，可先用中午 12:00 生成，類型與內在權威通常不受影響。
+          出生地決定時區換算，系統已涵蓋各地歷史夏令時間規則。不確定出生時間的話，
+          可先用中午 12:00 生成，類型與內在權威通常不受影響。
         </p>
       </section>
 
@@ -120,42 +125,39 @@ export default function Home() {
       </footer>
 
       <style jsx>{`
-        main { max-width: 980px; margin: 0 auto; padding: 48px 20px 80px; }
+        main { max-width: 1280px; margin: 0 auto; padding: 48px 20px 80px; }
         .hero { text-align: center; margin-bottom: 40px; }
-        .eyebrow {
-          font-size: 12px; letter-spacing: 4px; color: var(--faint);
-          text-transform: uppercase; margin: 0 0 12px;
-        }
-        h1 { font-size: 40px; font-weight: 700; margin: 0 0 16px; letter-spacing: 2px; }
-        .lede { color: var(--faint); line-height: 1.9; margin: 0; font-size: 15px; }
+        .eyebrow { font-size: 12px; letter-spacing: 4px; color: var(--faint); margin: 0 0 12px; }
+        h1 { font-size: 42px; font-weight: 700; margin: 0 0 16px; letter-spacing: 3px; }
+        .lede { color: var(--faint); line-height: 2; margin: 0; font-size: 16px; }
         .panel {
           background: var(--paper); border: 1px solid var(--line);
-          border-radius: 16px; padding: 28px;
+          border-radius: 16px; padding: 28px; max-width: 860px; margin: 0 auto;
         }
         .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
         .span2 { grid-column: span 2; }
         .field { display: flex; flex-direction: column; gap: 6px; }
-        .field span { font-size: 12px; color: var(--faint); letter-spacing: 1px; }
+        .field span { font-size: 13px; color: var(--faint); letter-spacing: 1px; }
         .field input, .field select {
-          padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
-          background: #fff; color: var(--ink); font-size: 15px;
+          padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px;
+          background: #fff; color: var(--ink); font-size: 16px;
         }
         .cta {
-          margin-top: 24px; width: 100%; padding: 14px;
+          margin-top: 24px; width: 100%; padding: 15px;
           background: var(--coffee); color: var(--bg); border: none;
-          border-radius: 10px; font-size: 16px; font-weight: 700;
-          letter-spacing: 2px; cursor: pointer;
+          border-radius: 10px; font-size: 17px; font-weight: 700;
+          letter-spacing: 3px; cursor: pointer;
         }
         .cta:hover { background: var(--ink); }
         .cta:disabled { opacity: .6; cursor: default; }
         .error { color: var(--red); font-size: 14px; margin: 12px 0 0; }
-        .note { font-size: 12px; color: var(--faint); line-height: 1.8; margin: 16px 0 0; }
-        .foot { text-align: center; margin-top: 40px; }
-        .foot a { font-size: 14px; text-decoration: none; }
+        .note { font-size: 13px; color: var(--faint); line-height: 1.9; margin: 16px 0 0; }
+        .foot { text-align: center; margin-top: 48px; }
+        .foot a { font-size: 15px; text-decoration: none; }
         .foot a:hover { text-decoration: underline; }
         @media (max-width: 720px) {
           .grid { grid-template-columns: repeat(2, 1fr); }
-          h1 { font-size: 30px; }
+          h1 { font-size: 32px; }
         }
       `}</style>
     </main>
@@ -163,56 +165,91 @@ export default function Home() {
 }
 
 function ChartResult({ result }) {
-  const { svg, summary, design, personality } = result;
+  const { svg, svgFull, summary, label } = result;
+  const wrapRef = useRef(null);
+  const [busy, setBusy] = useState(false);
+
+  async function download() {
+    setBusy(true);
+    try {
+      const src = svgFull;   // 下載版含完整摘要表
+      const img = new Image();
+      const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(src);
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
+      const scale = 2;
+      const cv = document.createElement('canvas');
+      cv.width = 900 * scale; cv.height = 1180 * scale;
+      const ctx = cv.getContext('2d');
+      ctx.fillStyle = '#F6F1E7';
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.drawImage(img, 0, 0, cv.width, cv.height);
+      const a = document.createElement('a');
+      a.download = `${label}-人類圖.png`;
+      a.href = cv.toDataURL('image/png');
+      a.click();
+    } catch {
+      alert('下載失敗，可以改用長按或右鍵儲存圖片。');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const rows = [
+    [['類型', summary.type], ['人生角色', summary.profile], ['定義', summary.definition]],
+    [['內在權威', summary.authority], ['策略', summary.strategy], ['非自己主題', summary.notSelf]],
+  ];
+
   return (
     <section className="result">
-      <div className="chart" dangerouslySetInnerHTML={{ __html: svg }} />
-      <div className="side">
-        <div className="card">
-          <h2>基本資訊</h2>
-          <dl>
-            <div><dt>類型</dt><dd>{summary.type}</dd></div>
-            <div><dt>人生角色</dt><dd>{summary.profile}</dd></div>
-            <div><dt>定義</dt><dd>{summary.definition}</dd></div>
-            <div><dt>內在權威</dt><dd>{summary.authority}</dd></div>
-            <div><dt>策略</dt><dd>{summary.strategy}</dd></div>
-            <div><dt>非自己主題</dt><dd>{summary.notSelf}</dd></div>
-          </dl>
-          <p className="cross">{summary.cross}</p>
-        </div>
-        <div className="card">
-          <h2>通道與定義中心</h2>
-          <p className="chips">{summary.channels.map((c) => <span key={c}>{c}</span>)}</p>
-          <p className="chips">{summary.centers.map((c) => <span key={c} className="ctr">{c}</span>)}</p>
-        </div>
-      </div>
+      <div className="chart" ref={wrapRef} dangerouslySetInnerHTML={{ __html: svg }} />
+
+      <aside className="side">
+        {rows.map((row, i) => (
+          <table key={i} className="info">
+            <thead><tr>{row.map(([k]) => <th key={k}>{k}</th>)}</tr></thead>
+            <tbody><tr>{row.map(([k, v]) => <td key={k}>{v}</td>)}</tr></tbody>
+          </table>
+        ))}
+        <table className="info">
+          <thead><tr><th>輪迴交叉</th></tr></thead>
+          <tbody><tr><td className="cross">{summary.cross}</td></tr></tbody>
+        </table>
+
+        <button className="dl" onClick={download} disabled={busy}>
+          {busy ? '準備中…' : '下載人類圖'}
+        </button>
+      </aside>
+
       <style jsx>{`
         .result {
-          margin-top: 40px; display: grid; grid-template-columns: 1.15fr .85fr;
-          gap: 24px; align-items: start;
+          margin-top: 48px; display: grid; grid-template-columns: 1.35fr .65fr;
+          gap: 32px; align-items: start;
         }
         .chart :global(svg) { width: 100%; height: auto; display: block; }
-        .side { display: flex; flex-direction: column; gap: 16px; }
-        .card {
+        .side { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 24px; }
+        .info { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .info th {
+          background: var(--coffee); color: var(--bg);
+          font-size: 14px; font-weight: 700; letter-spacing: 3px;
+          padding: 10px 6px; border-right: 1px solid rgba(246,241,231,.45);
+        }
+        .info th:last-child { border-right: none; }
+        .info td {
           background: var(--paper); border: 1px solid var(--line);
-          border-radius: 14px; padding: 20px;
+          font-size: 19px; font-weight: 700; text-align: center; padding: 16px 6px;
         }
-        h2 { font-size: 13px; letter-spacing: 3px; color: var(--faint);
-             margin: 0 0 14px; font-weight: 700; }
-        dl { margin: 0; display: grid; gap: 10px; }
-        dl div { display: flex; justify-content: space-between;
-                 border-bottom: 1px solid var(--line); padding-bottom: 8px; }
-        dt { font-size: 13px; color: var(--faint); }
-        dd { margin: 0; font-weight: 700; font-size: 15px; }
-        .cross { margin: 14px 0 0; font-size: 14px; line-height: 1.7; }
-        .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
-        .chips span {
-          font-size: 12px; padding: 4px 9px; border-radius: 20px;
-          background: #fff; border: 1px solid var(--line);
+        .info td.cross { font-size: 17px; line-height: 1.6; }
+        .dl {
+          margin-top: 6px; padding: 14px; width: 100%;
+          background: var(--terracotta); color: #fff; border: none;
+          border-radius: 10px; font-size: 16px; font-weight: 700;
+          letter-spacing: 2px; cursor: pointer;
         }
-        .chips .ctr { background: var(--gold); border-color: var(--gold); color: #fff; }
-        @media (max-width: 860px) {
+        .dl:hover { background: #a85c3f; }
+        .dl:disabled { opacity: .6; cursor: default; }
+        @media (max-width: 900px) {
           .result { grid-template-columns: 1fr; }
+          .side { position: static; }
         }
       `}</style>
     </section>

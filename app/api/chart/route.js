@@ -19,10 +19,11 @@ export async function POST(req) {
       return NextResponse.json({ error: '出生日期或時間格式有誤，請重新選擇。' }, { status: 400 });
     }
 
-    const { P, D, info, svg } = natalChart({ year, month, day, hour, minute, tz, name });
+    const { P, D, info, svg, svgFull } = natalChart({ year, month, day, hour, minute, tz, name });
 
     return NextResponse.json({
       svg,
+      svgFull,
       summary: {
         type: info.type, authority: info.authority, profile: info.profile,
         definition: info.definition, strategy: info.strategy, notSelf: info.notSelf,
