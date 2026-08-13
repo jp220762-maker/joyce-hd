@@ -85,7 +85,7 @@ export default function ChartView({ svg, svgFull, summary, label, birthLine }) {
         .chart { display: flex; }
         .chart :global(svg) { width: 100%; height: auto; align-self: flex-start; }
 
-        .info { display: flex; flex-direction: column; gap: 14px; }
+        .info { display: flex; flex-direction: column; gap: 14px; justify-content: center; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th {
           background: var(--coffee); color: var(--bg);
@@ -99,7 +99,7 @@ export default function ChartView({ svg, svgFull, summary, label, birthLine }) {
         }
         td.cross { font-size: 18px; line-height: 1.6; }
         .dl {
-          margin-top: auto; padding: 16px; width: 100%;
+          margin-top: 10px; padding: 16px; width: 100%;
           background: var(--terracotta); color: #fff; border: none;
           border-radius: 10px; font-size: 17px; font-weight: 700;
           letter-spacing: 3px; cursor: pointer;
