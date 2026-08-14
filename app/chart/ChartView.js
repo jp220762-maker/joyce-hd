@@ -31,8 +31,9 @@ export default function ChartView({ svg, svgFull, summary, label, birthLine, png
         <p className="tip">長按上方圖片 → 選擇「加入照片」或「儲存影像」即可存進相簿</p>
 
         <a className="dl" href={pngHref} target="_blank" rel="noopener">
-          在新分頁開啟圖片
+          放大檢視圖片（可長按儲存）
         </a>
+        <a className="dl2" href={`${pngHref}&dl=1`}>下載到檔案</a>
 
         <nav className="nav">
           <a href="/">← 重新排盤</a>
@@ -59,6 +60,14 @@ export default function ChartView({ svg, svgFull, summary, label, birthLine, png
             letter-spacing: 2px;
           }
           .dl:disabled { opacity: .6; }
+          .dl2 {
+            display: block; text-align: center; text-decoration: none;
+            margin-top: 10px; width: 100%; padding: 13px;
+            background: transparent; color: var(--coffee);
+            border: 1px solid var(--line); border-radius: 10px;
+            font-size: 15px; font-weight: 700; letter-spacing: 2px;
+            box-sizing: border-box;
+          }
           .nav { display: flex; justify-content: space-between; margin-top: 24px; }
           .nav a { font-size: 14px; text-decoration: none; }
         `}</style>
@@ -95,7 +104,7 @@ export default function ChartView({ svg, svgFull, summary, label, birthLine, png
             </table>
           </div>
 
-          <a className="dl" href={pngHref} download>下載人類圖</a>
+          <a className="dl" href={`${pngHref}&dl=1`} download>下載人類圖</a>
         </div>
       </section>
 
