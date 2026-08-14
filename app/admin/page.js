@@ -62,18 +62,17 @@ export default async function AdminPage({ searchParams }) {
     );
   }
 
-  const { rows, total, natal, transit, uvTotal, uvDaily, persistent } = await readUsage(300);
+  const RANGES = [
+    { key: '14d', label: '近 14 天', days: 14 },
+    { key: '1m',  label: '近一個月', days: 30 },
+    { key: '1y',  label: '近一年',   days: 365 },
+    { key: '3y',  label: '近三年',   days: 1095 },
+    { key: 'all', label: '全部',     days: 0 },
+  ];
+  const range = RANGES.find((r) => r.key === (searchParams?.range || '14d')) || RANGES[0];
+  const { rows, total, natal, transit, uvTotal, daily, persistent } = await readUsage(300, range.days);
 
-  // 依日期彙總（人次）
-  const hitsByDay = {};
-  rows.forEach((r) => {
-    const d = r.at.slice(0, 10);
-    hitsByDay[d] = (hitsByDay[d] || 0) + 1;
-  });
-  // 合併「人次」與「不重複使用者」，由舊到新排列
-  const dailyMerged = (uvDaily || []).slice().reverse().map(({ day, uv }) => ({
-    day, uv, hits: hitsByDay[day] || 0,
-  }));
+
 
   // 類型分布
   const byType = {};
@@ -96,26 +95,44 @@ export default async function AdminPage({ searchParams }) {
       </section>
 
       <section className="block">
-        <h2>近 14 天每日使用</h2>
+        <div className="bar-head">
+          <h2>使用趨勢</h2>
+          <div className="tabs">
+            {RANGES.map((r) => (
+              <a key={r.key}
+                 href={`/admin?key=${encodeURIComponent(searchParams.key)}&range=${r.key}`}
+                 className={r.key === range.key ? 'tab on' : 'tab'}>{r.label}</a>
+            ))}
+          </div>
+        </div>
         <div className="legend">
           <span><i className="sw a" />使用人次</span>
           <span><i className="sw b" />不重複使用者</span>
         </div>
-        <div className="bars">
-          {dailyMerged.map(({ day, hits, uv }) => {
-            const max = Math.max(1, ...dailyMerged.map((x) => x.hits));
-            return (
-              <div key={day} className="bar">
-                <div className="pair">
-                  <div className="fill a" style={{ height: `${Math.round((hits / max) * 110)}px` }} />
-                  <div className="fill b" style={{ height: `${Math.round((uv / max) * 110)}px` }} />
+        {daily.length === 0 ? (
+          <p className="none">此範圍內尚無資料</p>
+        ) : (
+          <div className="bars" data-dense={daily.length > 40 ? '1' : '0'}>
+            {(() => {
+              const max = Math.max(1, ...daily.map((x) => x.hits), ...daily.map((x) => x.uv));
+              return daily.map(({ label, hits, uv }) => (
+                <div key={label} className="bar">
+                  <div className="pair">
+                    <div className="col">
+                      <span className="v a">{hits || ''}</span>
+                      <div className="fill a" style={{ height: `${Math.round((hits / max) * 100)}px` }} />
+                    </div>
+                    <div className="col">
+                      <span className="v b">{uv || ''}</span>
+                      <div className="fill b" style={{ height: `${Math.round((uv / max) * 100)}px` }} />
+                    </div>
+                  </div>
+                  <span className="d">{label.length === 4 ? label : label.slice(5)}</span>
                 </div>
-                <span className="n">{hits}<i>/{uv}</i></span>
-                <span className="d">{day.slice(5)}</span>
-              </div>
-            );
-          })}
-        </div>
+              ));
+            })()}
+          </div>
+        )}
       </section>
 
       {Object.keys(byType).length > 0 && (
@@ -177,15 +194,37 @@ export default async function AdminPage({ searchParams }) {
         .sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
         .sw.a { background: var(--terracotta); }
         .sw.b { background: var(--sage); }
-        .bars { display: flex; align-items: flex-end; gap: 8px; min-height: 150px; }
-        .bar { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
-        .pair { display: flex; align-items: flex-end; gap: 3px; height: 110px; }
+        .bar-head { display: flex; align-items: center; justify-content: space-between;
+                    flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+        .bar-head h2 { margin: 0; }
+        .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+        .tab {
+          font-size: 13px; padding: 6px 14px; border-radius: 20px;
+          border: 1px solid var(--line); background: var(--paper);
+          color: var(--ink); text-decoration: none;
+        }
+        .tab:hover { border-color: var(--coffee); }
+        .tab.on { background: var(--coffee); color: var(--bg); border-color: var(--coffee); }
+        .bars {
+          display: flex; align-items: flex-end; gap: 8px; min-height: 160px;
+          overflow-x: auto; padding-bottom: 6px;
+        }
+        .bars[data-dense='1'] { gap: 3px; }
+        .bar { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1; min-width: 26px; }
+        .bars[data-dense='1'] .bar { min-width: 14px; }
+        .pair { display: flex; align-items: flex-end; gap: 3px; }
+        .col { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+        .v { font-size: 11px; font-weight: 700; line-height: 1; min-height: 12px; }
+        .v.a { color: var(--terracotta); }
+        .v.b { color: var(--sage); }
+        .bars[data-dense='1'] .v { display: none; }
         .fill { width: 15px; border-radius: 3px 3px 0 0; min-height: 3px; }
+        .bars[data-dense='1'] .fill { width: 7px; }
         .fill.a { background: var(--terracotta); }
         .fill.b { background: var(--sage); }
-        .n { font-size: 12px; font-weight: 700; }
-        .n i { font-style: normal; color: var(--sage); font-weight: 700; }
-        .d { font-size: 11px; color: var(--faint); }
+        .d { font-size: 11px; color: var(--faint); white-space: nowrap; }
+        .bars[data-dense='1'] .d { font-size: 9px; transform: rotate(-60deg); transform-origin: center; }
+        .none { color: var(--faint); font-size: 14px; padding: 30px 0; text-align: center; }
         .chips { display: flex; flex-wrap: wrap; gap: 8px; }
         .chips span {
           background: var(--paper); border: 1px solid var(--line);
