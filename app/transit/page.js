@@ -1,4 +1,5 @@
 import { transitChart, taipeiNowString } from '../../lib/chart.js';
+import { logUsage } from '../../lib/usage.js';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: '今日流日 — 人類圖' };
@@ -7,6 +8,7 @@ export default function TransitPage() {
   const now = new Date();
   const { svg } = transitChart(now, '今日流日');
   const stamp = taipeiNowString(now);
+  logUsage({ kind: 'transit' });
 
   return (
     <main>

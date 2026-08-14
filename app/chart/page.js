@@ -1,5 +1,6 @@
 import { natalChart } from '../../lib/chart.js';
 import ChartView from './ChartView';
+import { logUsage } from '../../lib/usage.js';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: '你的人類圖 — 排盤結果' };
@@ -26,6 +27,12 @@ export default function ChartPage({ searchParams }) {
   }
 
   const { info, svg, svgFull } = natalChart({ year, month, day, hour, minute, tz, name });
+
+  logUsage({
+    kind: 'natal', name, city,
+    birth: `${year}/${month}/${day} ${hour}:${String(minute).padStart(2, '0')}`,
+    type: info.type, profile: info.profile,
+  });
   const pad = (n) => String(n).padStart(2, '0');
   const birthLine = `${year}/${pad(month)}/${pad(day)} ${pad(hour)}:${pad(minute)}　${city}`;
 
