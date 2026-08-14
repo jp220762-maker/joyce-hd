@@ -26,8 +26,13 @@ export async function GET(req) {
     const png = new Resvg(svgFull, {
       fitTo: { mode: 'width', value: 1800 },
       font: {
+        fontFiles: [
+          path.join(fontDir, 'NotoSansTC-Regular.otf'),
+          path.join(fontDir, 'NotoSansTC-Bold.otf'),
+          path.join(fontDir, 'DejaVuSans.ttf'),
+        ],
         fontDirs: [fontDir],
-        loadSystemFonts: true,
+        loadSystemFonts: false,          // 只用打包字型，避免環境差異
         defaultFontFamily: 'Noto Sans TC',
       },
     }).render().asPng();

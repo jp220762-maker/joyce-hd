@@ -111,6 +111,7 @@ export default function Home() {
 
       <footer className="foot">
         <a href="/transit">查看今日流日 →</a>
+        <a className="admin" href="/admin">管理</a>
       </footer>
 
       <style jsx>{`
@@ -143,6 +144,11 @@ export default function Home() {
         .foot { text-align: center; margin-top: 48px; }
         .foot a { font-size: 15px; text-decoration: none; }
         .foot a:hover { text-decoration: underline; }
+        .foot .admin {
+          display: block; margin-top: 20px;
+          font-size: 12px; color: var(--line); letter-spacing: 2px;
+        }
+        .foot .admin:hover { color: var(--faint); }
         @media (max-width: 720px) {
           .grid { grid-template-columns: repeat(2, 1fr); }
           h1 { font-size: 32px; }
