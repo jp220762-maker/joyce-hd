@@ -14,27 +14,66 @@ function fmt(iso) {
 
 export default async function AdminPage({ searchParams }) {
   const key = process.env.ADMIN_KEY || 'hd2026';
-  if ((searchParams?.key || '') !== key) {
+  const tried = searchParams?.key;
+  if ((tried || '') !== key) {
     return (
-      <main style={{ maxWidth: 480, margin: '0 auto', padding: '100px 24px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: 24, marginBottom: 12 }}>後台統計</h1>
-        <p style={{ color: 'var(--faint)', fontSize: 14, lineHeight: 1.9 }}>
-          請在網址後面加上管理密碼，例如：<br />
-          <code style={{ fontSize: 13 }}>/admin?key=你的密碼</code>
-        </p>
+      <main className="gate">
+        <form method="GET" action="/admin">
+          <h1>後台統計</h1>
+          <p className="hint">請輸入管理密碼</p>
+          <input
+            type="password"
+            name="key"
+            placeholder="管理密碼"
+            autoFocus
+            autoComplete="current-password"
+          />
+          <button type="submit">登入</button>
+          {tried !== undefined && <p className="err">密碼不正確，請再試一次</p>}
+        </form>
+
+        <style>{`
+          .gate {
+            min-height: 70vh; display: flex; align-items: center; justify-content: center;
+            padding: 40px 24px;
+          }
+          .gate form {
+            width: 100%; max-width: 360px; text-align: center;
+            background: var(--paper); border: 1px solid var(--line);
+            border-radius: 16px; padding: 36px 28px;
+          }
+          .gate h1 { font-size: 24px; letter-spacing: 3px; margin: 0 0 8px; }
+          .hint { color: var(--faint); font-size: 14px; margin: 0 0 22px; }
+          .gate input {
+            width: 100%; padding: 13px 14px; font-size: 16px;
+            border: 1px solid var(--line); border-radius: 9px;
+            background: #fff; color: var(--ink); box-sizing: border-box;
+          }
+          .gate button {
+            width: 100%; margin-top: 14px; padding: 14px;
+            background: var(--coffee); color: var(--bg);
+            border: none; border-radius: 9px;
+            font-size: 16px; font-weight: 700; letter-spacing: 3px; cursor: pointer;
+          }
+          .gate button:hover { background: var(--ink); }
+          .err { color: var(--red); font-size: 13px; margin: 16px 0 0; }
+        `}</style>
       </main>
     );
   }
 
-  const { rows, total, natal, transit, persistent } = await readUsage(300);
+  const { rows, total, natal, transit, uvTotal, uvDaily, persistent } = await readUsage(300);
 
-  // 依日期彙總
-  const byDay = {};
+  // 依日期彙總（人次）
+  const hitsByDay = {};
   rows.forEach((r) => {
-    const d = fmt(r.at).split(' ')[0];
-    byDay[d] = (byDay[d] || 0) + 1;
+    const d = r.at.slice(0, 10);
+    hitsByDay[d] = (hitsByDay[d] || 0) + 1;
   });
-  const days = Object.entries(byDay).slice(0, 14);
+  // 合併「人次」與「不重複使用者」，由舊到新排列
+  const dailyMerged = (uvDaily || []).slice().reverse().map(({ day, uv }) => ({
+    day, uv, hits: hitsByDay[day] || 0,
+  }));
 
   // 類型分布
   const byType = {};
@@ -45,31 +84,39 @@ export default async function AdminPage({ searchParams }) {
       <h1>後台統計</h1>
       {!persistent && (
         <p className="warn">
-          目前使用暫存模式，伺服器重啟後紀錄會消失。若要永久保存，請在 Vercel 開啟 KV 資料庫
-          （Storage → Create Database → KV），系統會自動偵測並改用。
+          目前使用暫存模式，伺服器重啟後紀錄會消失。若要永久保存，請在 Vercel Marketplace 安裝 Upstash Redis 並連結此專案，系統會自動偵測並改用。
         </p>
       )}
 
       <section className="cards">
-        <div className="card"><span>總使用次數</span><b>{total}</b></div>
+        <div className="card"><span>總使用人次</span><b>{total}</b></div>
+        <div className="card hl"><span>不重複使用者</span><b>{uvTotal}</b></div>
         <div className="card"><span>本命排盤</span><b>{natal || rows.filter(r => r.kind === 'natal').length}</b></div>
         <div className="card"><span>流日查詢</span><b>{transit || rows.filter(r => r.kind === 'transit').length}</b></div>
       </section>
 
-      {days.length > 0 && (
-        <section className="block">
-          <h2>近期每日使用</h2>
-          <div className="bars">
-            {days.map(([d, n]) => (
-              <div key={d} className="bar">
-                <div className="fill" style={{ height: `${Math.min(100, n * 12)}px` }} />
-                <span className="n">{n}</span>
-                <span className="d">{d}</span>
+      <section className="block">
+        <h2>近 14 天每日使用</h2>
+        <div className="legend">
+          <span><i className="sw a" />使用人次</span>
+          <span><i className="sw b" />不重複使用者</span>
+        </div>
+        <div className="bars">
+          {dailyMerged.map(({ day, hits, uv }) => {
+            const max = Math.max(1, ...dailyMerged.map((x) => x.hits));
+            return (
+              <div key={day} className="bar">
+                <div className="pair">
+                  <div className="fill a" style={{ height: `${Math.round((hits / max) * 110)}px` }} />
+                  <div className="fill b" style={{ height: `${Math.round((uv / max) * 110)}px` }} />
+                </div>
+                <span className="n">{hits}<i>/{uv}</i></span>
+                <span className="d">{day.slice(5)}</span>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
+            );
+          })}
+        </div>
+      </section>
 
       {Object.keys(byType).length > 0 && (
         <section className="block">
@@ -115,7 +162,7 @@ export default async function AdminPage({ searchParams }) {
           background: #FBF3E4; border: 1px solid var(--line); border-radius: 10px;
           padding: 14px 16px; font-size: 13px; line-height: 1.9; color: var(--ink);
         }
-        .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0 32px; }
+        .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 20px 0 32px; }
         .card {
           background: var(--paper); border: 1px solid var(--line);
           border-radius: 12px; padding: 20px; text-align: center;
@@ -123,10 +170,21 @@ export default async function AdminPage({ searchParams }) {
         .card span { display: block; font-size: 13px; color: var(--faint); margin-bottom: 8px; }
         .card b { font-size: 34px; }
         .block { margin-bottom: 36px; }
-        .bars { display: flex; align-items: flex-end; gap: 10px; min-height: 130px; }
-        .bar { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .fill { width: 34px; background: var(--terracotta); border-radius: 4px 4px 0 0; min-height: 4px; }
+        .card.hl { border-color: var(--terracotta); }
+        .card.hl b { color: var(--terracotta); }
+        .legend { display: flex; gap: 18px; margin-bottom: 12px; font-size: 12px; color: var(--faint); }
+        .legend span { display: flex; align-items: center; gap: 6px; }
+        .sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+        .sw.a { background: var(--terracotta); }
+        .sw.b { background: var(--sage); }
+        .bars { display: flex; align-items: flex-end; gap: 8px; min-height: 150px; }
+        .bar { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+        .pair { display: flex; align-items: flex-end; gap: 3px; height: 110px; }
+        .fill { width: 15px; border-radius: 3px 3px 0 0; min-height: 3px; }
+        .fill.a { background: var(--terracotta); }
+        .fill.b { background: var(--sage); }
         .n { font-size: 12px; font-weight: 700; }
+        .n i { font-style: normal; color: var(--sage); font-weight: 700; }
         .d { font-size: 11px; color: var(--faint); }
         .chips { display: flex; flex-wrap: wrap; gap: 8px; }
         .chips span {
