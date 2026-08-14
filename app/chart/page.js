@@ -40,6 +40,7 @@ export default function ChartPage({ searchParams }) {
       }}
       label={name || '我的人類圖'}
       birthLine={birthLine}
+      pngHref={`/api/png?y=${year}&m=${month}&d=${day}&h=${hour}&mi=${minute}&tz=${encodeURIComponent(tz)}&name=${encodeURIComponent(name)}`}
     />
   );
 }
