@@ -1,161 +1,164 @@
-'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { CITIES, CITY_GROUPS } from '../lib/cities';
+import { getContent, getAllPosts } from '../lib/store.js';
+import BirthForm from './BirthForm';
 
-const YEARS = Array.from({ length: 116 }, (_, i) => 2026 - i);
-const pad = (n) => String(n).padStart(2, '0');
+export const dynamic = 'force-dynamic';
 
-export default function Home() {
-  const router = useRouter();
-  const [form, setForm] = useState({
-    name: '', year: 1990, month: 1, day: 1, hour: 12, minute: 0,
-    tz: 'Asia/Taipei', city: '台北市',
-  });
-  const [going, setGoing] = useState(false);
+export async function generateMetadata() {
+  const c = await getContent();
+  return {
+    title: `${c.site.name} — 人類圖排盤與解讀`,
+    description: c.site.tagline,
+  };
+}
 
-  const daysInMonth = new Date(form.year, form.month, 0).getDate();
-  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
-
-  function submit() {
-    setGoing(true);
-    const q = new URLSearchParams({
-      name: form.name,
-      y: form.year, m: form.month, d: Math.min(form.day, daysInMonth),
-      h: form.hour, mi: form.minute, tz: form.tz, city: form.city,
-    });
-    router.push(`/chart?${q.toString()}`);
-  }
+export default async function Home() {
+  const [c, posts] = await Promise.all([getContent(), getAllPosts()]);
+  const featured = posts.slice(0, 4);
 
   return (
     <main>
-      <header className="hero">
-        <p className="eyebrow">HUMAN DESIGN</p>
-        <h1>你的人類圖</h1>
-        <p className="lede">
+      {/* 品牌開場 */}
+      <section className="hero">
+        <div className="words">
+          <p className="brand">{c.site.name}</p>
+          <h1>{c.site.intro}</h1>
+          <p className="tagline">{c.site.tagline}</p>
+          <div className="cta">
+            <a className="primary" href="#chart">免費生成人類圖</a>
+            <a className="ghost" href="/about">關於我</a>
+          </div>
+        </div>
+        <div className="portrait">
+          <img src="/images/joyce.jpg" alt="Joyce" />
+        </div>
+      </section>
+
+      {/* 服務簡介 */}
+      <section className="services">
+        <h2>我能陪你做的</h2>
+        <div className="grid">
+          {c.services.items.slice(0, 3).map((s) => (
+            <div key={s.name} className="card">
+              <h3>{s.name}</h3>
+              <p className="meta">{s.duration}</p>
+              <p className="desc">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+        <p className="more"><a href="/services">看所有服務項目 →</a></p>
+      </section>
+
+      {/* 免費排盤 */}
+      <section id="chart" className="chart-sec">
+        <h2>先從認識自己開始</h2>
+        <p className="sub">
           輸入出生日期、時間與地點，生成專屬人體圖。<br />
           出生時間越精確，人生角色與輪迴交叉的判定越準確。
         </p>
-      </header>
-
-      <section className="panel">
-        <div className="grid">
-          <label className="field span2">
-            <span>姓名（選填，會顯示在圖上）</span>
-            <input value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="例如：Joyce" />
-          </label>
-
-          <label className="field">
-            <span>出生年</span>
-            <select value={form.year} onChange={(e) => set('year', +e.target.value)}>
-              {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-            </select>
-          </label>
-
-          <label className="field">
-            <span>月</span>
-            <select value={form.month} onChange={(e) => set('month', +e.target.value)}>
-              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
-          </label>
-
-          <label className="field">
-            <span>日</span>
-            <select value={Math.min(form.day, daysInMonth)} onChange={(e) => set('day', +e.target.value)}>
-              {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => <option key={d} value={d}>{d}</option>)}
-            </select>
-          </label>
-
-          <label className="field">
-            <span>時（24小時制）</span>
-            <select value={form.hour} onChange={(e) => set('hour', +e.target.value)}>
-              {Array.from({ length: 24 }, (_, i) => i).map((h) => <option key={h} value={h}>{pad(h)}</option>)}
-            </select>
-          </label>
-
-          <label className="field">
-            <span>分</span>
-            <select value={form.minute} onChange={(e) => set('minute', +e.target.value)}>
-              {Array.from({ length: 60 }, (_, i) => i).map((m) => <option key={m} value={m}>{pad(m)}</option>)}
-            </select>
-          </label>
-
-          <label className="field span2">
-            <span>出生地</span>
-            <select
-              value={form.tz + '|' + form.city}
-              onChange={(e) => {
-                const [tz, city] = e.target.value.split('|');
-                setForm((f) => ({ ...f, tz, city }));
-              }}
-            >
-              {CITY_GROUPS.map((g) => (
-                <optgroup key={g} label={g}>
-                  {CITIES.filter((c) => c.group === g).map((c) => (
-                    <option key={c.name} value={c.tz + '|' + c.name}>{c.name}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <button className="cta" onClick={submit} disabled={going}>
-          {going ? '計算中…' : '生成人類圖'}
-        </button>
-        <p className="note">
-          出生地決定時區換算，系統已涵蓋各地歷史夏令時間規則。不確定出生時間的話，
-          可先用中午 12:00 生成，類型與內在權威通常不受影響。
-        </p>
+        <BirthForm />
       </section>
 
-      <footer className="foot">
-        <a href="/articles">閱讀文章</a>
-        <span className="sep">·</span>
-        <a href="/transit">查看今日流日 →</a>
-        <a className="admin" href="/admin">管理</a>
-      </footer>
+      {/* 文章精選 */}
+      {featured.length > 0 && (
+        <section className="posts">
+          <h2>最近的文字</h2>
+          <ul>
+            {featured.map((p) => (
+              <li key={p.id}>
+                <a href={`/articles/${p.id}`}>
+                  <span className="cat">{p.category}</span>
+                  <b>{p.title}</b>
+                  <span className="ex">{p.excerpt}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p className="more"><a href="/articles">閱讀更多文章 →</a></p>
+        </section>
+      )}
 
-      <style jsx>{`
-        main { max-width: 900px; margin: 0 auto; padding: 64px 20px 80px; }
-        .hero { text-align: center; margin-bottom: 40px; }
-        .eyebrow { font-size: 12px; letter-spacing: 4px; color: var(--faint); margin: 0 0 12px; }
-        h1 { font-size: 42px; font-weight: 700; margin: 0 0 16px; letter-spacing: 3px; }
-        .lede { color: var(--faint); line-height: 2; margin: 0; font-size: 16px; }
-        .panel {
+      <style>{`
+        main { max-width: 1060px; margin: 0 auto; padding: 40px 20px 80px; }
+
+        .hero {
+          display: grid; grid-template-columns: 1.15fr .85fr;
+          gap: 48px; align-items: center; margin-bottom: 88px;
+        }
+        .brand {
+          font-size: 14px; letter-spacing: 8px; color: var(--coffee);
+          margin: 0 0 20px; font-weight: 700;
+        }
+        h1 {
+          font-size: 38px; font-weight: 700; line-height: 1.6;
+          margin: 0 0 24px; letter-spacing: 2px;
+        }
+        .tagline {
+          font-size: 16px; line-height: 2.2; color: var(--faint);
+          margin: 0 0 32px;
+        }
+        .cta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .cta a {
+          display: inline-block; padding: 14px 32px; border-radius: 10px;
+          font-size: 16px; font-weight: 700; letter-spacing: 2px; text-decoration: none;
+        }
+        .cta .primary { background: var(--coffee); color: var(--bg); }
+        .cta .primary:hover { background: var(--ink); }
+        .cta .ghost { border: 1px solid var(--line); color: var(--ink); background: var(--paper); }
+        .cta .ghost:hover { border-color: var(--coffee); }
+        .portrait img {
+          width: 100%; height: auto; display: block;
+          border-radius: 16px; box-shadow: 0 8px 32px rgba(68,58,49,.12);
+        }
+
+        h2 {
+          font-size: 15px; letter-spacing: 5px; color: var(--coffee);
+          margin: 0 0 28px; font-weight: 700; text-align: center;
+        }
+
+        .services { margin-bottom: 88px; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .card {
           background: var(--paper); border: 1px solid var(--line);
-          border-radius: 16px; padding: 28px;
+          border-radius: 14px; padding: 26px 24px;
         }
-        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-        .span2 { grid-column: span 2; }
-        .field { display: flex; flex-direction: column; gap: 6px; }
-        .field span { font-size: 13px; color: var(--faint); letter-spacing: 1px; }
-        .field input, .field select {
-          padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px;
-          background: #fff; color: var(--ink); font-size: 16px;
+        .card h3 { font-size: 18px; margin: 0 0 6px; font-weight: 700; }
+        .card .meta { font-size: 12px; color: var(--gold); margin: 0 0 12px; letter-spacing: 1px; }
+        .card .desc { font-size: 14px; line-height: 1.9; color: var(--faint); margin: 0; }
+        .more { text-align: center; margin: 24px 0 0; }
+        .more a { font-size: 14px; text-decoration: none; }
+        .more a:hover { text-decoration: underline; }
+
+        .chart-sec {
+          background: var(--paper); border: 1px solid var(--line);
+          border-radius: 20px; padding: 44px 32px; margin-bottom: 88px;
         }
-        .cta {
-          margin-top: 24px; width: 100%; padding: 15px;
-          background: var(--coffee); color: var(--bg); border: none;
-          border-radius: 10px; font-size: 17px; font-weight: 700;
-          letter-spacing: 3px; cursor: pointer;
+        .sub {
+          text-align: center; font-size: 15px; line-height: 2;
+          color: var(--faint); margin: 0 0 32px;
         }
-        .cta:hover { background: var(--ink); }
-        .cta:disabled { opacity: .6; cursor: default; }
-        .note { font-size: 13px; color: var(--faint); line-height: 1.9; margin: 16px 0 0; }
-        .foot { text-align: center; margin-top: 48px; }
-        .foot a { font-size: 15px; text-decoration: none; }
-        .foot .sep { color: var(--line); margin: 0 12px; }
-        .foot a:hover { text-decoration: underline; }
-        .foot .admin {
-          display: block; margin-top: 20px;
-          font-size: 12px; color: var(--line); letter-spacing: 2px;
+
+        .posts ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+        .posts a {
+          display: block; text-decoration: none; color: inherit;
+          background: var(--paper); border: 1px solid var(--line);
+          border-radius: 12px; padding: 20px 22px;
         }
-        .foot .admin:hover { color: var(--faint); }
-        @media (max-width: 720px) {
-          .grid { grid-template-columns: repeat(2, 1fr); }
-          h1 { font-size: 32px; }
-          main { padding: 40px 16px 60px; }
+        .posts a:hover { border-color: var(--coffee); background: #fff; }
+        .posts .cat {
+          display: inline-block; font-size: 11px; padding: 3px 10px;
+          border-radius: 12px; background: var(--gold); color: #fff; margin-bottom: 10px;
+        }
+        .posts b { display: block; font-size: 17px; margin-bottom: 6px; line-height: 1.5; }
+        .posts .ex { font-size: 13px; color: var(--faint); line-height: 1.8; }
+
+        @media (max-width: 860px) {
+          .hero { grid-template-columns: 1fr; gap: 32px; text-align: center; margin-bottom: 64px; }
+          .portrait { order: -1; max-width: 300px; margin: 0 auto; }
+          .cta { justify-content: center; }
+          h1 { font-size: 28px; }
+          .grid { grid-template-columns: 1fr; }
+          .chart-sec { padding: 32px 18px; }
+          main { padding: 28px 16px 60px; }
         }
       `}</style>
     </main>

@@ -1,5 +1,6 @@
 import { readUsage } from '../../lib/usage.js';
 import PostManager from './PostManager';
+import ContentManager from './ContentManager';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: '後台統計', robots: { index: false, follow: false } };
@@ -71,7 +72,8 @@ export default async function AdminPage({ searchParams }) {
     { key: 'all', label: '全部',     days: 0 },
   ];
   const range = RANGES.find((r) => r.key === (searchParams?.range || '14d')) || RANGES[0];
-  const view = searchParams?.view === 'posts' ? 'posts' : 'stats';
+  const v = searchParams?.view;
+  const view = v === 'posts' ? 'posts' : v === 'content' ? 'content' : 'stats';
   const { rows, total, natal, transit, uvTotal, daily, persistent } = await readUsage(300, range.days);
 
 
@@ -83,16 +85,19 @@ export default async function AdminPage({ searchParams }) {
   return (
     <main>
       <div className="nav-top">
-        <h1>{view === 'posts' ? '文章管理' : '後台統計'}</h1>
+        <h1>{view === 'posts' ? '文章管理' : view === 'content' ? '網站內容' : '後台統計'}</h1>
         <div className="vtabs">
           <a href={`/admin?key=${encodeURIComponent(searchParams.key)}`}
              className={view === 'stats' ? 'on' : ''}>使用統計</a>
           <a href={`/admin?key=${encodeURIComponent(searchParams.key)}&view=posts`}
              className={view === 'posts' ? 'on' : ''}>文章管理</a>
+          <a href={`/admin?key=${encodeURIComponent(searchParams.key)}&view=content`}
+             className={view === 'content' ? 'on' : ''}>網站內容</a>
         </div>
       </div>
 
       {view === 'posts' && <PostManager adminKey={searchParams.key} />}
+      {view === 'content' && <ContentManager adminKey={searchParams.key} />}
       {view === 'stats' && (<>
       {!persistent && (
         <p className="warn">
