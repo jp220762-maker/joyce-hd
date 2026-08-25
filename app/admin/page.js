@@ -1,4 +1,5 @@
 import { readUsage } from '../../lib/usage.js';
+import PostManager from './PostManager';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: '後台統計', robots: { index: false, follow: false } };
@@ -70,6 +71,7 @@ export default async function AdminPage({ searchParams }) {
     { key: 'all', label: '全部',     days: 0 },
   ];
   const range = RANGES.find((r) => r.key === (searchParams?.range || '14d')) || RANGES[0];
+  const view = searchParams?.view === 'posts' ? 'posts' : 'stats';
   const { rows, total, natal, transit, uvTotal, daily, persistent } = await readUsage(300, range.days);
 
 
@@ -80,7 +82,18 @@ export default async function AdminPage({ searchParams }) {
 
   return (
     <main>
-      <h1>後台統計</h1>
+      <div className="nav-top">
+        <h1>{view === 'posts' ? '文章管理' : '後台統計'}</h1>
+        <div className="vtabs">
+          <a href={`/admin?key=${encodeURIComponent(searchParams.key)}`}
+             className={view === 'stats' ? 'on' : ''}>使用統計</a>
+          <a href={`/admin?key=${encodeURIComponent(searchParams.key)}&view=posts`}
+             className={view === 'posts' ? 'on' : ''}>文章管理</a>
+        </div>
+      </div>
+
+      {view === 'posts' && <PostManager adminKey={searchParams.key} />}
+      {view === 'stats' && (<>
       {!persistent && (
         <p className="warn">
           目前使用暫存模式，伺服器重啟後紀錄會消失。若要永久保存，請在 Vercel Marketplace 安裝 Upstash Redis 並連結此專案，系統會自動偵測並改用。
@@ -171,8 +184,19 @@ export default async function AdminPage({ searchParams }) {
         </table>
       </section>
 
+      </>)}
+
       <style>{`
         main { max-width: 1100px; margin: 0 auto; padding: 40px 20px 80px; }
+        .nav-top { display: flex; align-items: center; justify-content: space-between;
+                   flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+        .nav-top h1 { margin: 0; }
+        .vtabs { display: flex; gap: 6px; }
+        .vtabs a {
+          font-size: 14px; padding: 8px 18px; border-radius: 20px; text-decoration: none;
+          border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+        }
+        .vtabs a.on { background: var(--coffee); color: var(--bg); border-color: var(--coffee); }
         h1 { font-size: 30px; letter-spacing: 3px; margin: 0 0 20px; }
         h2 { font-size: 14px; letter-spacing: 2px; color: var(--faint); margin: 0 0 14px; }
         .warn {

@@ -110,6 +110,8 @@ export default function Home() {
       </section>
 
       <footer className="foot">
+        <a href="/articles">閱讀文章</a>
+        <span className="sep">·</span>
         <a href="/transit">查看今日流日 →</a>
         <a className="admin" href="/admin">管理</a>
       </footer>
@@ -143,6 +145,7 @@ export default function Home() {
         .note { font-size: 13px; color: var(--faint); line-height: 1.9; margin: 16px 0 0; }
         .foot { text-align: center; margin-top: 48px; }
         .foot a { font-size: 15px; text-decoration: none; }
+        .foot .sep { color: var(--line); margin: 0 12px; }
         .foot a:hover { text-decoration: underline; }
         .foot .admin {
           display: block; margin-top: 20px;
