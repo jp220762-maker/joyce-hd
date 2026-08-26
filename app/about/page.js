@@ -1,4 +1,5 @@
 import { getContent } from '../../lib/store.js';
+import SocialIcon from '../SocialIcon';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,16 +48,16 @@ export default async function AboutPage() {
 
       <section className="block">
         <h2>聯絡與追蹤</h2>
-        <div className="contact">
-          <p>
-            <span>Email</span>
-            <a href={`mailto:${c.contact.email}`}>{c.contact.email}</a>
-          </p>
-          <p><span>LINE</span><b>{c.contact.line}</b></p>
-        </div>
+        <p className="ctext">
+          想聊聊或預約解讀，歡迎透過 <a href="/services#contact">聯絡表單</a> 留言給我，
+          我會盡快回覆。也可以在這些地方找到我：
+        </p>
         <div className="social">
           {c.contact.social.map((s) => (
-            <a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer">{s.name}</a>
+            <a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer">
+              <SocialIcon type={s.icon} size={18} />
+              {s.name}
+            </a>
           ))}
         </div>
       </section>
@@ -106,17 +107,11 @@ export default async function AboutPage() {
           margin-top: 14px; letter-spacing: 1px;
         }
 
-        .contact p {
-          display: flex; align-items: baseline; gap: 16px;
-          margin: 0 0 12px; font-size: 16px;
-        }
-        .contact span {
-          font-size: 12px; color: var(--faint); letter-spacing: 2px;
-          min-width: 56px;
-        }
-        .contact a { color: var(--coffee); }
+        .ctext { font-size: 15px; line-height: 2; color: var(--ink); margin: 0; }
+        .ctext a { color: var(--coffee); font-weight: 700; }
         .social { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
         .social a {
+          display: inline-flex; align-items: center; gap: 8px;
           font-size: 14px; padding: 10px 20px; border-radius: 22px;
           background: var(--paper); border: 1px solid var(--line);
           text-decoration: none; color: var(--ink);

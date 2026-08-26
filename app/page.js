@@ -29,9 +29,29 @@ export default async function Home() {
           </div>
         </div>
         <div className="portrait">
-          <img src="/images/joyce.jpg" alt="Joyce" />
+          <img
+            src={c.site.portraitUrl || '/images/joyce.jpg'}
+            alt="Joyce"
+            style={{
+              width: `${c.site.portraitSize || 240}px`,
+              aspectRatio: c.site.portraitShape === 'original' ? 'auto' : '1 / 1',
+              objectFit: c.site.portraitShape === 'original' ? 'contain' : 'cover',
+              borderRadius: c.site.portraitShape === 'circle' ? '50%'
+                : c.site.portraitShape === 'square' ? '16px' : '16px',
+            }}
+          />
         </div>
       </section>
+
+      {/* 品牌氛圍 */}
+      {c.site.showAmbience && c.site.ambienceUrl && (
+        <section className="ambience">
+          <img src={c.site.ambienceUrl} alt="" />
+          <div className="quote">
+            <p>{c.site.ambienceQuote || c.site.tagline}</p>
+          </div>
+        </section>
+      )}
 
       {/* 服務簡介 */}
       <section className="services">
@@ -57,6 +77,25 @@ export default async function Home() {
         </p>
         <BirthForm />
       </section>
+
+      {/* 顧客回饋 */}
+      {c.testimonials?.show && c.testimonials.items?.length > 0 && (
+        <section className="voices">
+          <h2>{c.testimonials.heading}</h2>
+          {c.testimonials.lede && <p className="vsub">{c.testimonials.lede}</p>}
+          <div className="vgrid">
+            {c.testimonials.items.map((t, i) => (
+              <figure key={i}>
+                <blockquote>{t.text}</blockquote>
+                <figcaption>
+                  <b>{t.name}</b>
+                  {t.title && <span>{t.title}</span>}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 文章精選 */}
       {featured.length > 0 && (
@@ -105,10 +144,47 @@ export default async function Home() {
         .cta .primary:hover { background: var(--ink); }
         .cta .ghost { border: 1px solid var(--line); color: var(--ink); background: var(--paper); }
         .cta .ghost:hover { border-color: var(--coffee); }
+        .portrait { display: flex; justify-content: center; }
         .portrait img {
-          width: 100%; height: auto; display: block;
-          border-radius: 16px; box-shadow: 0 8px 32px rgba(68,58,49,.12);
+          max-width: 100%; height: auto; display: block;
+          box-shadow: 0 8px 32px rgba(68,58,49,.14);
         }
+
+        .ambience {
+          position: relative; border-radius: 20px; overflow: hidden;
+          margin-bottom: 88px; box-shadow: 0 10px 40px rgba(68,58,49,.10);
+        }
+        .ambience img { width: 100%; height: auto; display: block; }
+        .quote {
+          position: absolute; inset: auto 0 0 0;
+          padding: 40px 32px 30px;
+          background: linear-gradient(to top, rgba(246,241,231,.96), rgba(246,241,231,0));
+        }
+        .quote p {
+          margin: 0; text-align: center; font-size: 16px; line-height: 2.1;
+          color: var(--ink); letter-spacing: 1px; max-width: 720px;
+          margin-left: auto; margin-right: auto;
+        }
+
+        .voices { margin-bottom: 88px; }
+        .vsub { text-align: center; font-size: 14px; color: var(--faint); margin: -14px 0 28px; }
+        .vgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .vgrid figure {
+          margin: 0; background: var(--paper); border: 1px solid var(--line);
+          border-radius: 14px; padding: 26px 24px;
+          display: flex; flex-direction: column; justify-content: space-between;
+        }
+        blockquote {
+          margin: 0 0 18px; font-size: 15px; line-height: 2.05; color: var(--ink);
+          position: relative; padding-top: 18px;
+        }
+        blockquote::before {
+          content: '\\201C'; position: absolute; top: -6px; left: -2px;
+          font-size: 42px; color: var(--gold); line-height: 1; font-family: Georgia, serif;
+        }
+        figcaption { display: flex; align-items: baseline; gap: 10px; }
+        figcaption b { font-size: 14px; }
+        figcaption span { font-size: 12px; color: var(--faint); }
 
         h2 {
           font-size: 15px; letter-spacing: 5px; color: var(--coffee);
@@ -157,6 +233,10 @@ export default async function Home() {
           .cta { justify-content: center; }
           h1 { font-size: 28px; }
           .grid { grid-template-columns: 1fr; }
+          .vgrid { grid-template-columns: 1fr; }
+          .ambience { margin-bottom: 56px; }
+          .quote { padding: 28px 18px 20px; }
+          .quote p { font-size: 14px; line-height: 1.95; }
           .chart-sec { padding: 32px 18px; }
           main { padding: 28px 16px 60px; }
         }

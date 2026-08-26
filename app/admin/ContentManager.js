@@ -37,6 +37,8 @@ export default function ContentManager({ adminKey }) {
 
   const SECTIONS = [
     ['site', '網站標語'],
+    ['brand', '品牌形象'],
+    ['voices', '顧客回饋'],
     ['about', '關於我'],
     ['services', '服務項目'],
     ['faq', '常見問題'],
@@ -63,6 +65,95 @@ export default function ContentManager({ adminKey }) {
           <L t="網站名稱"><input value={c.site.name} onChange={(e) => up(['site','name'], e.target.value)} /></L>
           <L t="首頁主標"><input value={c.site.intro} onChange={(e) => up(['site','intro'], e.target.value)} /></L>
           <L t="標語（首頁副標）"><textarea rows={3} value={c.site.tagline} onChange={(e) => up(['site','tagline'], e.target.value)} /></L>
+        </div>
+      )}
+
+      {sec === 'brand' && (
+        <div className="pane">
+          <ImageSlot label="網站 Logo（建議 PNG 去背）" slot="logo" adminKey={adminKey}
+            current={c.site.logoUrl} onDone={(u) => up(['site','logoUrl'], u)} />
+          <L t="Logo 顯示高度（px，建議 36–60）">
+            <input type="number" value={c.site.logoHeight || 46}
+              onChange={(e) => up(['site','logoHeight'], Number(e.target.value) || 46)} />
+          </L>
+
+          <hr />
+
+          <ImageSlot label="首頁品牌氛圍圖（建議橫式）" slot="ambience" adminKey={adminKey}
+            current={c.site.ambienceUrl} onDone={(u) => up(['site','ambienceUrl'], u)} />
+          <L t="氛圍圖上的文字">
+            <input value={c.site.ambienceQuote || ''}
+              onChange={(e) => up(['site','ambienceQuote'], e.target.value)} />
+          </L>
+          <L t="是否顯示氛圍圖">
+            <select value={c.site.showAmbience ? '1' : '0'}
+              onChange={(e) => up(['site','showAmbience'], e.target.value === '1')}>
+              <option value="1">顯示</option>
+              <option value="0">隱藏</option>
+            </select>
+          </L>
+
+          <hr />
+
+          <ImageSlot label="個人形象照" slot="portrait" adminKey={adminKey}
+            current={c.site.portraitUrl} onDone={(u) => up(['site','portraitUrl'], u)} />
+          <L t="形象照形狀">
+            <select value={c.site.portraitShape || 'circle'}
+              onChange={(e) => up(['site','portraitShape'], e.target.value)}>
+              <option value="circle">圓形</option>
+              <option value="square">方形（圓角）</option>
+              <option value="original">原始比例</option>
+            </select>
+          </L>
+          <L t={`形象照大小：${c.site.portraitSize || 240} px`}>
+            <input type="range" min="140" max="420" step="10"
+              value={c.site.portraitSize || 240}
+              onChange={(e) => up(['site','portraitSize'], Number(e.target.value))} />
+          </L>
+          <div className="preview">
+            <img src={c.site.portraitUrl || '/images/joyce.jpg'} alt="預覽"
+              style={{
+                width: (c.site.portraitSize || 240) + 'px',
+                aspectRatio: c.site.portraitShape === 'original' ? 'auto' : '1 / 1',
+                objectFit: c.site.portraitShape === 'original' ? 'contain' : 'cover',
+                borderRadius: c.site.portraitShape === 'circle' ? '50%' : '16px',
+              }} />
+          </div>
+        </div>
+      )}
+
+      {sec === 'voices' && (
+        <div className="pane">
+          <L t="區塊標題"><input value={c.testimonials.heading}
+            onChange={(e) => up(['testimonials','heading'], e.target.value)} /></L>
+          <L t="區塊說明"><input value={c.testimonials.lede}
+            onChange={(e) => up(['testimonials','lede'], e.target.value)} /></L>
+          <L t="是否顯示於首頁">
+            <select value={c.testimonials.show ? '1' : '0'}
+              onChange={(e) => up(['testimonials','show'], e.target.value === '1')}>
+              <option value="1">顯示</option>
+              <option value="0">隱藏</option>
+            </select>
+          </L>
+          {c.testimonials.items.map((t, i) => (
+            <div key={i} className="row">
+              <div className="rowhead">
+                <b>回饋 {i + 1}</b>
+                <button className="del" onClick={() =>
+                  up(['testimonials','items'], c.testimonials.items.filter((_, k) => k !== i))}>刪除</button>
+              </div>
+              <div className="two">
+                <input placeholder="稱呼（例如：小敏、Y 女士）" value={t.name}
+                  onChange={(e) => { const a=[...c.testimonials.items]; a[i]={...t,name:e.target.value}; up(['testimonials','items'],a); }} />
+                <input placeholder="服務項目" value={t.title}
+                  onChange={(e) => { const a=[...c.testimonials.items]; a[i]={...t,title:e.target.value}; up(['testimonials','items'],a); }} />
+              </div>
+              <textarea rows={3} placeholder="回饋內容" value={t.text}
+                onChange={(e) => { const a=[...c.testimonials.items]; a[i]={...t,text:e.target.value}; up(['testimonials','items'],a); }} />
+            </div>
+          ))}
+          <button className="add" onClick={() => up(['testimonials','items'],
+            [...c.testimonials.items, { name:'', title:'', text:'' }])}>+ 新增回饋</button>
         </div>
       )}
 
@@ -142,8 +233,8 @@ export default function ContentManager({ adminKey }) {
 
       {sec === 'contact' && (
         <div className="pane">
-          <L t="Email"><input value={c.contact.email} onChange={(e) => up(['contact','email'], e.target.value)} /></L>
-          <L t="LINE ID"><input value={c.contact.line} onChange={(e) => up(['contact','line'], e.target.value)} /></L>
+          <L t="接收來信的 Email（不會顯示在網站上）"><input value={c.contact.email} onChange={(e) => up(['contact','email'], e.target.value)} /></L>
+          <L t="LINE ID（僅供備忘，不會顯示在網站上）"><input value={c.contact.line} onChange={(e) => up(['contact','line'], e.target.value)} /></L>
           {c.contact.social.map((s, i) => (
             <div key={i} className="row">
               <div className="rowhead">
@@ -153,9 +244,19 @@ export default function ContentManager({ adminKey }) {
               <div className="two">
                 <input placeholder="名稱" value={s.name}
                   onChange={(e) => { const a=[...c.contact.social]; a[i]={...s,name:e.target.value}; up(['contact','social'],a); }} />
-                <input placeholder="網址" value={s.url}
-                  onChange={(e) => { const a=[...c.contact.social]; a[i]={...s,url:e.target.value}; up(['contact','social'],a); }} />
+                <select value={s.icon || ''}
+                  onChange={(e) => { const a=[...c.contact.social]; a[i]={...s,icon:e.target.value}; up(['contact','social'],a); }}>
+                  <option value="">平台圖示…</option>
+                  <option value="facebook">Facebook</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="threads">Threads</option>
+                  <option value="youtube">YouTube</option>
+                  <option value="podcast">Podcast</option>
+                  <option value="line">LINE</option>
+                </select>
               </div>
+              <input placeholder="網址" value={s.url}
+                onChange={(e) => { const a=[...c.contact.social]; a[i]={...s,url:e.target.value}; up(['contact','social'],a); }} />
             </div>
           ))}
           <button className="add" onClick={() => up(['contact','social'], [...c.contact.social, { name:'', url:'' }])}>+ 新增社群連結</button>
@@ -195,6 +296,12 @@ export default function ContentManager({ adminKey }) {
           border-radius: 10px; font-size: 14px; color: var(--coffee);
         }
         .add:hover { border-color: var(--coffee); background: #fff; }
+        hr { border: none; border-top: 1px solid var(--line); margin: 24px 0; }
+        .preview {
+          display: flex; justify-content: center; padding: 20px;
+          background: #fff; border: 1px solid var(--line); border-radius: 10px;
+        }
+        .preview img { box-shadow: 0 6px 20px rgba(68,58,49,.12); }
       `}</style>
       <style jsx global>{`
         .cm input, .cm textarea {
@@ -215,4 +322,49 @@ export default function ContentManager({ adminKey }) {
 
 function L({ t, children }) {
   return <label><span>{t}</span>{children}</label>;
+}
+
+function ImageSlot({ label, slot, adminKey, current, onDone }) {
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState('');
+
+  async function pick(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { setNote('圖片超過 2MB，請先壓縮'); return; }
+    setBusy(true); setNote('上傳中…');
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const r = await fetch(`/api/upload?key=${encodeURIComponent(adminKey)}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slot, dataUrl: reader.result }),
+      });
+      const d = await r.json();
+      if (r.ok) { onDone(d.url); setNote('✓ 已上傳，記得按「儲存全部」'); }
+      else setNote('✗ ' + (d.error || '失敗'));
+      setBusy(false);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  return (
+    <div className="slot">
+      <span className="lb">{label}</span>
+      {current && <img className="thumb" src={current} alt="" />}
+      <div className="row2">
+        <input type="file" accept="image/png,image/jpeg,image/webp" onChange={pick} disabled={busy} />
+        {note && <em>{note}</em>}
+      </div>
+      <style jsx>{`
+        .slot { margin-bottom: 20px; }
+        .lb { display: block; font-size: 13px; color: var(--faint); letter-spacing: 1px; margin-bottom: 8px; }
+        .thumb {
+          max-width: 220px; max-height: 120px; display: block; margin-bottom: 10px;
+          border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: 6px;
+        }
+        .row2 { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        em { font-style: normal; font-size: 12px; color: var(--coffee); }
+      `}</style>
+    </div>
+  );
 }

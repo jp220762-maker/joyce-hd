@@ -1,4 +1,5 @@
 import { getContent } from '../../lib/store.js';
+import ContactForm from '../ContactForm';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +34,7 @@ export default async function ServicesPage() {
         ))}
       </section>
 
-      <section className="booking">
+      <section id="contact" className="booking">
         <h3>{c.booking.heading}</h3>
         <p className="sub">{c.booking.lede}</p>
         {c.booking.embedUrl ? (
@@ -43,9 +44,8 @@ export default async function ServicesPage() {
         ) : (
           <p className="note">{c.booking.note}</p>
         )}
-        <div className="contact">
-          <a className="btn" href={`mailto:${c.contact.email}`}>寫信給我</a>
-          <span className="line">LINE：{c.contact.line}</span>
+        <div className="cform">
+          <ContactForm services={c.services.items.map((s) => s.name)} />
         </div>
       </section>
 
@@ -100,14 +100,7 @@ export default async function ServicesPage() {
         .embed { border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
         .embed iframe { width: 100%; height: 620px; border: 0; display: block; }
         .note { font-size: 14px; color: var(--faint); line-height: 2; margin: 0 0 22px; }
-        .contact { display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; }
-        .btn {
-          display: inline-block; padding: 13px 30px; border-radius: 10px;
-          background: var(--coffee); color: var(--bg); text-decoration: none;
-          font-size: 15px; font-weight: 700; letter-spacing: 2px;
-        }
-        .btn:hover { background: var(--ink); }
-        .line { font-size: 15px; color: var(--faint); }
+        .cform { max-width: 560px; margin: 0 auto; }
 
         .faq { margin-top: 56px; }
         details {

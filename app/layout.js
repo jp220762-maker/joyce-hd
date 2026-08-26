@@ -8,7 +8,9 @@ export default function RootLayout({ children }) {
     <html lang="zh-Hant">
       <body>
         <nav className="sitenav">
-          <a className="logo" href="/">J頁微光</a>
+          <a className="logo" href="/">
+            <img src="/images/logo.png" alt="J頁有光" />
+          </a>
           <div className="links">
             <a href="/about">關於我</a>
             <a href="/services">服務項目</a>
@@ -18,7 +20,7 @@ export default function RootLayout({ children }) {
         </nav>
         {children}
         <footer className="sitefoot">
-          <p>J頁微光 · Joyce 人類圖</p>
+          <p>J頁有光 · Joyce 人類圖</p>
           <a className="adm" href="/admin">管理</a>
         </footer>
         <style>{`
@@ -53,10 +55,8 @@ export default function RootLayout({ children }) {
             gap: 16px; max-width: 1060px; margin: 0 auto;
             padding: 18px 20px; flex-wrap: wrap;
           }
-          .sitenav .logo {
-            font-size: 17px; font-weight: 700; letter-spacing: 4px;
-            color: var(--coffee); text-decoration: none;
-          }
+          .sitenav .logo { display: flex; align-items: center; text-decoration: none; }
+          .sitenav .logo img { height: var(--logo-h, 46px); width: auto; display: block; }
           .sitenav .links { display: flex; gap: 22px; flex-wrap: wrap; }
           .sitenav .links a {
             font-size: 14px; text-decoration: none; color: var(--ink);
@@ -73,6 +73,7 @@ export default function RootLayout({ children }) {
           .sitefoot .adm:hover { color: var(--faint); }
           @media (max-width: 620px) {
             .sitenav { justify-content: center; gap: 10px; }
+            .sitenav .logo img { height: 38px; }
             .sitenav .links { gap: 16px; justify-content: center; }
           }
         `}</style>
