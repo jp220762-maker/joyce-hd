@@ -23,17 +23,17 @@ export default async function AboutPage() {
           <img src="/images/joyce.jpg" alt="Joyce" />
         </div>
         <div className="text">
-          {c.about.body.map((p, i) => (
-            <p key={i} className={i === c.about.body.length - 1 ? 'last' : ''}>{p}</p>
+          {(c.about.body || []).map((p, i) => (
+            <p key={i} className={i === (c.about.body || []).length - 1 ? 'last' : ''}>{p}</p>
           ))}
         </div>
       </section>
 
-      {c.about.credentials?.length > 0 && (
+      {(c.about.credentials?.length || 0) > 0 && (
         <section className="block">
           <h2>學習與認證</h2>
           <ul className="creds">
-            {c.about.credentials.map((x) => <li key={x}>{x}</li>)}
+            {(c.about.credentials || []).map((x) => <li key={x}>{x}</li>)}
           </ul>
         </section>
       )}
@@ -44,6 +44,18 @@ export default async function AboutPage() {
           <img src="/images/joyce-chart.jpg" alt="Joyce 的人類圖" />
           <figcaption>{c.about.chartCaption}</figcaption>
         </figure>
+
+        {(c.about.chartNotes?.length || 0) > 0 && (
+          <div className="notes">
+            <h3>我圖上的幾個關鍵</h3>
+            {(c.about.chartNotes || []).map((n, i) => (
+              <div key={i} className="note">
+                <b>{n.t}</b>
+                <p>{n.d}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="block">
@@ -53,7 +65,7 @@ export default async function AboutPage() {
           我會盡快回覆。也可以在這些地方找到我：
         </p>
         <div className="social">
-          {c.contact.social.map((s) => (
+          {(c.contact.social || []).map((s) => (
             <a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer">
               <SocialIcon type={s.icon} size={18} />
               {s.name}
@@ -106,6 +118,18 @@ export default async function AboutPage() {
           text-align: center; font-size: 13px; color: var(--faint);
           margin-top: 14px; letter-spacing: 1px;
         }
+        .notes { margin-top: 36px; }
+        .notes h3 {
+          font-size: 13px; letter-spacing: 3px; color: var(--faint);
+          margin: 0 0 18px; font-weight: 700;
+        }
+        .note {
+          background: var(--paper); border: 1px solid var(--line);
+          border-left: 3px solid var(--gold);
+          border-radius: 0 12px 12px 0; padding: 18px 22px; margin-bottom: 12px;
+        }
+        .note b { display: block; font-size: 16px; margin-bottom: 8px; }
+        .note p { margin: 0; font-size: 15px; line-height: 2; color: var(--faint); }
 
         .ctext { font-size: 15px; line-height: 2; color: var(--ink); margin: 0; }
         .ctext a { color: var(--coffee); font-weight: 700; }

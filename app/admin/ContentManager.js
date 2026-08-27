@@ -8,7 +8,21 @@ export default function ContentManager({ adminKey }) {
 
   useEffect(() => {
     fetch(`/api/content?key=${encodeURIComponent(adminKey)}`, { cache: 'no-store' })
-      .then((r) => r.json()).then((d) => setC(d.content));
+      .then((r) => r.json()).then((d) => {
+        const x = d.content || {};
+        // 補齊欄位，避免舊資料缺少新區塊時當掉
+        setC({
+          site: { logoUrl:'', logoHeight:46, ambienceUrl:'', ambienceQuote:'',
+                  showAmbience:true, portraitUrl:'', portraitShape:'circle',
+                  portraitSize:240, name:'', intro:'', tagline:'', ...(x.site||{}) },
+          about: { heading:'關於我', body:[], credentials:[], chartCaption:'', chartNotes:[], ...(x.about||{}) },
+          services: { heading:'服務項目', lede:'', items:[], faq:[], ...(x.services||{}) },
+          testimonials: { heading:'聽聽他們怎麼說', lede:'', show:true, items:[], ...(x.testimonials||{}) },
+          cases: { heading:'個案分享', lede:'', show:true, items:[], ...(x.cases||{}) },
+          booking: { heading:'預約', lede:'', embedUrl:'', note:'', ...(x.booking||{}) },
+          contact: { email:'', line:'', social:[], ...(x.contact||{}) },
+        });
+      });
   }, []);
 
   async function save() {
@@ -39,6 +53,7 @@ export default function ContentManager({ adminKey }) {
     ['site', '網站標語'],
     ['brand', '品牌形象'],
     ['voices', '顧客回饋'],
+    ['cases', '個案分享'],
     ['about', '關於我'],
     ['services', '服務項目'],
     ['faq', '常見問題'],
@@ -72,9 +87,10 @@ export default function ContentManager({ adminKey }) {
         <div className="pane">
           <ImageSlot label="網站 Logo（建議 PNG 去背）" slot="logo" adminKey={adminKey}
             current={c.site.logoUrl} onDone={(u) => up(['site','logoUrl'], u)} />
-          <L t="Logo 顯示高度（px，建議 36–60）">
-            <input type="number" value={c.site.logoHeight || 46}
-              onChange={(e) => up(['site','logoHeight'], Number(e.target.value) || 46)} />
+          <L t={`Logo 顯示高度：${c.site.logoHeight || 46} px（導覽列高度，建議 40–90）`}>
+            <input type="range" min="30" max="120" step="2"
+              value={c.site.logoHeight || 46}
+              onChange={(e) => up(['site','logoHeight'], Number(e.target.value))} />
           </L>
 
           <hr />
@@ -135,25 +151,57 @@ export default function ContentManager({ adminKey }) {
               <option value="0">隱藏</option>
             </select>
           </L>
-          {c.testimonials.items.map((t, i) => (
+          {(c.testimonials.items || []).map((t, i) => (
             <div key={i} className="row">
               <div className="rowhead">
                 <b>回饋 {i + 1}</b>
                 <button className="del" onClick={() =>
-                  up(['testimonials','items'], c.testimonials.items.filter((_, k) => k !== i))}>刪除</button>
+                  up(['testimonials','items'], (c.testimonials.items || []).filter((_, k) => k !== i))}>刪除</button>
               </div>
               <div className="two">
                 <input placeholder="稱呼（例如：小敏、Y 女士）" value={t.name}
-                  onChange={(e) => { const a=[...c.testimonials.items]; a[i]={...t,name:e.target.value}; up(['testimonials','items'],a); }} />
+                  onChange={(e) => { const a=[...(c.testimonials.items || [])]; a[i]={...t,name:e.target.value}; up(['testimonials','items'],a); }} />
                 <input placeholder="服務項目" value={t.title}
-                  onChange={(e) => { const a=[...c.testimonials.items]; a[i]={...t,title:e.target.value}; up(['testimonials','items'],a); }} />
+                  onChange={(e) => { const a=[...(c.testimonials.items || [])]; a[i]={...t,title:e.target.value}; up(['testimonials','items'],a); }} />
               </div>
               <textarea rows={3} placeholder="回饋內容" value={t.text}
-                onChange={(e) => { const a=[...c.testimonials.items]; a[i]={...t,text:e.target.value}; up(['testimonials','items'],a); }} />
+                onChange={(e) => { const a=[...(c.testimonials.items || [])]; a[i]={...t,text:e.target.value}; up(['testimonials','items'],a); }} />
             </div>
           ))}
           <button className="add" onClick={() => up(['testimonials','items'],
-            [...c.testimonials.items, { name:'', title:'', text:'' }])}>+ 新增回饋</button>
+            [...(c.testimonials.items || []), { name:'', title:'', text:'' }])}>+ 新增回饋</button>
+        </div>
+      )}
+
+      {sec === 'cases' && (
+        <div className="pane">
+          <L t="區塊標題"><input value={c.cases.heading}
+            onChange={(e) => up(['cases','heading'], e.target.value)} /></L>
+          <L t="警語（顯示於區塊下方）"><input value={c.cases.lede}
+            onChange={(e) => up(['cases','lede'], e.target.value)} /></L>
+          <L t="是否顯示於首頁">
+            <select value={c.cases.show ? '1' : '0'}
+              onChange={(e) => up(['cases','show'], e.target.value === '1')}>
+              <option value="1">顯示</option><option value="0">隱藏</option>
+            </select>
+          </L>
+          {(c.cases.items || []).map((k, i) => (
+            <div key={i} className="row">
+              <div className="rowhead">
+                <b>個案 {i + 1}</b>
+                <button className="del" onClick={() =>
+                  up(['cases','items'], (c.cases.items || []).filter((_, n) => n !== i))}>刪除</button>
+              </div>
+              <input placeholder="標題" value={k.title}
+                onChange={(e) => { const a=[...(c.cases.items||[])]; a[i]={...k,title:e.target.value}; up(['cases','items'],a); }} />
+              <input placeholder="背景（例如：30多歲・投射者・行銷企劃）" value={k.who}
+                onChange={(e) => { const a=[...(c.cases.items||[])]; a[i]={...k,who:e.target.value}; up(['cases','items'],a); }} />
+              <textarea rows={5} placeholder="故事內容" value={k.story}
+                onChange={(e) => { const a=[...(c.cases.items||[])]; a[i]={...k,story:e.target.value}; up(['cases','items'],a); }} />
+            </div>
+          ))}
+          <button className="add" onClick={() => up(['cases','items'],
+            [...(c.cases.items||[]), { title:'', who:'', story:'' }])}>+ 新增個案</button>
         </div>
       )}
 
@@ -161,14 +209,31 @@ export default function ContentManager({ adminKey }) {
         <div className="pane">
           <L t="頁面標題"><input value={c.about.heading} onChange={(e) => up(['about','heading'], e.target.value)} /></L>
           <L t="內文（一段一行）">
-            <textarea rows={14} value={c.about.body.join('\n')}
+            <textarea rows={14} value={(c.about.body || []).join('\n')}
               onChange={(e) => up(['about','body'], e.target.value.split('\n').map(s=>s.trim()).filter(Boolean))} />
           </L>
           <L t="學習與認證（一項一行）">
-            <textarea rows={4} value={c.about.credentials.join('\n')}
+            <textarea rows={4} value={(c.about.credentials || []).join('\n')}
               onChange={(e) => up(['about','credentials'], e.target.value.split('\n').map(s=>s.trim()).filter(Boolean))} />
           </L>
           <L t="人類圖說明文字"><input value={c.about.chartCaption} onChange={(e) => up(['about','chartCaption'], e.target.value)} /></L>
+          <hr />
+          <p className="sub">我圖上的關鍵特色</p>
+          {(c.about.chartNotes || []).map((n, i) => (
+            <div key={i} className="row">
+              <div className="rowhead">
+                <b>特色 {i + 1}</b>
+                <button className="del" onClick={() =>
+                  up(['about','chartNotes'], (c.about.chartNotes || []).filter((_, k) => k !== i))}>刪除</button>
+              </div>
+              <input placeholder="標題（例如：4/6 人生角色）" value={n.t}
+                onChange={(e) => { const a=[...(c.about.chartNotes||[])]; a[i]={...n,t:e.target.value}; up(['about','chartNotes'],a); }} />
+              <textarea rows={3} placeholder="說明" value={n.d}
+                onChange={(e) => { const a=[...(c.about.chartNotes||[])]; a[i]={...n,d:e.target.value}; up(['about','chartNotes'],a); }} />
+            </div>
+          ))}
+          <button className="add" onClick={() => up(['about','chartNotes'],
+            [...(c.about.chartNotes||[]), { t:'', d:'' }])}>+ 新增特色</button>
         </div>
       )}
 
@@ -176,46 +241,56 @@ export default function ContentManager({ adminKey }) {
         <div className="pane">
           <L t="頁面標題"><input value={c.services.heading} onChange={(e) => up(['services','heading'], e.target.value)} /></L>
           <L t="頁面說明"><input value={c.services.lede} onChange={(e) => up(['services','lede'], e.target.value)} /></L>
-          {c.services.items.map((s, i) => (
+          {(c.services.items || []).map((s, i) => (
             <div key={i} className="row">
               <div className="rowhead">
                 <b>項目 {i + 1}</b>
                 <button className="del" onClick={() => {
-                  if (confirm(`刪除「${s.name}」？`)) up(['services','items'], c.services.items.filter((_, k) => k !== i));
+                  if (confirm(`刪除「${s.name}」？`)) up(['services','items'], (c.services.items || []).filter((_, k) => k !== i));
                 }}>刪除</button>
               </div>
               <input placeholder="服務名稱" value={s.name}
-                onChange={(e) => { const a=[...c.services.items]; a[i]={...s,name:e.target.value}; up(['services','items'],a); }} />
+                onChange={(e) => { const a=[...(c.services.items || [])]; a[i]={...s,name:e.target.value}; up(['services','items'],a); }} />
               <div className="two">
                 <input placeholder="時長" value={s.duration}
-                  onChange={(e) => { const a=[...c.services.items]; a[i]={...s,duration:e.target.value}; up(['services','items'],a); }} />
+                  onChange={(e) => { const a=[...(c.services.items || [])]; a[i]={...s,duration:e.target.value}; up(['services','items'],a); }} />
                 <input placeholder="價格" value={s.price}
-                  onChange={(e) => { const a=[...c.services.items]; a[i]={...s,price:e.target.value}; up(['services','items'],a); }} />
+                  onChange={(e) => { const a=[...(c.services.items || [])]; a[i]={...s,price:e.target.value}; up(['services','items'],a); }} />
               </div>
-              <textarea rows={3} placeholder="服務說明" value={s.desc}
-                onChange={(e) => { const a=[...c.services.items]; a[i]={...s,desc:e.target.value}; up(['services','items'],a); }} />
+              <textarea rows={2} placeholder="簡短說明（列表顯示）" value={s.desc}
+                onChange={(e) => { const a=[...(c.services.items || [])]; a[i]={...s,desc:e.target.value}; up(['services','items'],a); }} />
+              <input placeholder="網址代號（英文，例如 basic）" value={s.slug || ''}
+                onChange={(e) => { const a=[...(c.services.items || [])]; a[i]={...s,slug:e.target.value}; up(['services','items'],a); }} />
+              <textarea rows={5} placeholder="詳細介紹（一段一行）" value={(s.intro||[]).join('\n')}
+                onChange={(e) => { const a=[...(c.services.items || [])]; a[i]={...s,intro:e.target.value.split('\n').map(x=>x.trim()).filter(Boolean)}; up(['services','items'],a); }} />
+              <textarea rows={4} placeholder="你會帶走什麼（一項一行）" value={(s.gains||[]).join('\n')}
+                onChange={(e) => { const a=[...(c.services.items || [])]; a[i]={...s,gains:e.target.value.split('\n').map(x=>x.trim()).filter(Boolean)}; up(['services','items'],a); }} />
+              <textarea rows={3} placeholder="適合這樣的你（一項一行）" value={(s.forWho||[]).join('\n')}
+                onChange={(e) => { const a=[...(c.services.items || [])]; a[i]={...s,forWho:e.target.value.split('\n').map(x=>x.trim()).filter(Boolean)}; up(['services','items'],a); }} />
+              <textarea rows={3} placeholder="進行方式（一項一行）" value={(s.flow||[]).join('\n')}
+                onChange={(e) => { const a=[...(c.services.items || [])]; a[i]={...s,flow:e.target.value.split('\n').map(x=>x.trim()).filter(Boolean)}; up(['services','items'],a); }} />
             </div>
           ))}
           <button className="add" onClick={() => up(['services','items'],
-            [...c.services.items, { name:'新服務', duration:'', price:'請洽詢', desc:'' }])}>+ 新增服務項目</button>
+            [...(c.services.items || []), { name:'新服務', duration:'', price:'請洽詢', desc:'' }])}>+ 新增服務項目</button>
         </div>
       )}
 
       {sec === 'faq' && (
         <div className="pane">
-          {c.services.faq.map((f, i) => (
+          {(c.services.faq || []).map((f, i) => (
             <div key={i} className="row">
               <div className="rowhead">
                 <b>問題 {i + 1}</b>
-                <button className="del" onClick={() => up(['services','faq'], c.services.faq.filter((_, k) => k !== i))}>刪除</button>
+                <button className="del" onClick={() => up(['services','faq'], (c.services.faq || []).filter((_, k) => k !== i))}>刪除</button>
               </div>
               <input placeholder="問題" value={f.q}
-                onChange={(e) => { const a=[...c.services.faq]; a[i]={...f,q:e.target.value}; up(['services','faq'],a); }} />
+                onChange={(e) => { const a=[...(c.services.faq || [])]; a[i]={...f,q:e.target.value}; up(['services','faq'],a); }} />
               <textarea rows={3} placeholder="回答" value={f.a}
-                onChange={(e) => { const a=[...c.services.faq]; a[i]={...f,a:e.target.value}; up(['services','faq'],a); }} />
+                onChange={(e) => { const a=[...(c.services.faq || [])]; a[i]={...f,a:e.target.value}; up(['services','faq'],a); }} />
             </div>
           ))}
-          <button className="add" onClick={() => up(['services','faq'], [...c.services.faq, { q:'', a:'' }])}>+ 新增問題</button>
+          <button className="add" onClick={() => up(['services','faq'], [...(c.services.faq || []), { q:'', a:'' }])}>+ 新增問題</button>
         </div>
       )}
 
@@ -235,17 +310,17 @@ export default function ContentManager({ adminKey }) {
         <div className="pane">
           <L t="接收來信的 Email（不會顯示在網站上）"><input value={c.contact.email} onChange={(e) => up(['contact','email'], e.target.value)} /></L>
           <L t="LINE ID（僅供備忘，不會顯示在網站上）"><input value={c.contact.line} onChange={(e) => up(['contact','line'], e.target.value)} /></L>
-          {c.contact.social.map((s, i) => (
+          {(c.contact.social || []).map((s, i) => (
             <div key={i} className="row">
               <div className="rowhead">
                 <b>社群 {i + 1}</b>
-                <button className="del" onClick={() => up(['contact','social'], c.contact.social.filter((_, k) => k !== i))}>刪除</button>
+                <button className="del" onClick={() => up(['contact','social'], (c.contact.social || []).filter((_, k) => k !== i))}>刪除</button>
               </div>
               <div className="two">
                 <input placeholder="名稱" value={s.name}
-                  onChange={(e) => { const a=[...c.contact.social]; a[i]={...s,name:e.target.value}; up(['contact','social'],a); }} />
+                  onChange={(e) => { const a=[...(c.contact.social || [])]; a[i]={...s,name:e.target.value}; up(['contact','social'],a); }} />
                 <select value={s.icon || ''}
-                  onChange={(e) => { const a=[...c.contact.social]; a[i]={...s,icon:e.target.value}; up(['contact','social'],a); }}>
+                  onChange={(e) => { const a=[...(c.contact.social || [])]; a[i]={...s,icon:e.target.value}; up(['contact','social'],a); }}>
                   <option value="">平台圖示…</option>
                   <option value="facebook">Facebook</option>
                   <option value="instagram">Instagram</option>
@@ -256,10 +331,10 @@ export default function ContentManager({ adminKey }) {
                 </select>
               </div>
               <input placeholder="網址" value={s.url}
-                onChange={(e) => { const a=[...c.contact.social]; a[i]={...s,url:e.target.value}; up(['contact','social'],a); }} />
+                onChange={(e) => { const a=[...(c.contact.social || [])]; a[i]={...s,url:e.target.value}; up(['contact','social'],a); }} />
             </div>
           ))}
-          <button className="add" onClick={() => up(['contact','social'], [...c.contact.social, { name:'', url:'' }])}>+ 新增社群連結</button>
+          <button className="add" onClick={() => up(['contact','social'], [...(c.contact.social || []), { name:'', url:'' }])}>+ 新增社群連結</button>
         </div>
       )}
 
@@ -297,6 +372,7 @@ export default function ContentManager({ adminKey }) {
         }
         .add:hover { border-color: var(--coffee); background: #fff; }
         hr { border: none; border-top: 1px solid var(--line); margin: 24px 0; }
+        .sub { font-size: 13px; color: var(--faint); letter-spacing: 2px; margin: 0 0 14px; }
         .preview {
           display: flex; justify-content: center; padding: 20px;
           background: #fff; border: 1px solid var(--line); border-radius: 10px;

@@ -47,9 +47,9 @@ export default async function Home() {
       {c.site.showAmbience && c.site.ambienceUrl && (
         <section className="ambience">
           <img src={c.site.ambienceUrl} alt="" />
-          <div className="quote">
-            <p>{c.site.ambienceQuote || c.site.tagline}</p>
-          </div>
+          {c.site.ambienceQuote ? (
+            <div className="quote"><p>{c.site.ambienceQuote}</p></div>
+          ) : null}
         </section>
       )}
 
@@ -57,12 +57,12 @@ export default async function Home() {
       <section className="services">
         <h2>我能陪你做的</h2>
         <div className="grid">
-          {c.services.items.slice(0, 3).map((s) => (
-            <div key={s.name} className="card">
+          {(c.services.items || []).slice(0, 3).map((s) => (
+            <a key={s.name} className="card" href={`/services/${s.slug || ''}`}>
               <h3>{s.name}</h3>
               <p className="meta">{s.duration}</p>
               <p className="desc">{s.desc}</p>
-            </div>
+            </a>
           ))}
         </div>
         <p className="more"><a href="/services">看所有服務項目 →</a></p>
@@ -79,12 +79,12 @@ export default async function Home() {
       </section>
 
       {/* 顧客回饋 */}
-      {c.testimonials?.show && c.testimonials.items?.length > 0 && (
+      {c.testimonials?.show !== false && (c.testimonials?.items?.length > 0) && (
         <section className="voices">
           <h2>{c.testimonials.heading}</h2>
           {c.testimonials.lede && <p className="vsub">{c.testimonials.lede}</p>}
           <div className="vgrid">
-            {c.testimonials.items.map((t, i) => (
+            {(c.testimonials.items || []).map((t, i) => (
               <figure key={i}>
                 <blockquote>{t.text}</blockquote>
                 <figcaption>
@@ -94,6 +94,23 @@ export default async function Home() {
               </figure>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* 個案分享 */}
+      {c.cases?.show !== false && (c.cases?.items?.length > 0) && (
+        <section className="cases">
+          <h2>{c.cases.heading}</h2>
+          <div className="cgrid">
+            {(c.cases.items || []).map((k, i) => (
+              <article key={i}>
+                <h3>{k.title}</h3>
+                <p className="who">{k.who}</p>
+                <p className="story">{k.story}</p>
+              </article>
+            ))}
+          </div>
+          <p className="disclaimer">{c.cases.lede}</p>
         </section>
       )}
 
@@ -194,9 +211,11 @@ export default async function Home() {
         .services { margin-bottom: 88px; }
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
         .card {
+          display: block; text-decoration: none; color: inherit;
           background: var(--paper); border: 1px solid var(--line);
           border-radius: 14px; padding: 26px 24px;
         }
+        .card:hover { border-color: var(--coffee); background: #fff; }
         .card h3 { font-size: 18px; margin: 0 0 6px; font-weight: 700; }
         .card .meta { font-size: 12px; color: var(--gold); margin: 0 0 12px; letter-spacing: 1px; }
         .card .desc { font-size: 14px; line-height: 1.9; color: var(--faint); margin: 0; }
@@ -211,6 +230,20 @@ export default async function Home() {
         .sub {
           text-align: center; font-size: 15px; line-height: 2;
           color: var(--faint); margin: 0 0 32px;
+        }
+
+        .cases { margin-bottom: 88px; }
+        .cgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .cgrid article {
+          background: var(--paper); border: 1px solid var(--line);
+          border-radius: 14px; padding: 28px 26px;
+        }
+        .cgrid h3 { font-size: 19px; margin: 0 0 6px; font-weight: 700; line-height: 1.5; }
+        .cgrid .who { font-size: 12px; color: var(--gold); margin: 0 0 14px; letter-spacing: 1px; }
+        .cgrid .story { font-size: 15px; line-height: 2.05; margin: 0; color: var(--ink); }
+        .disclaimer {
+          text-align: center; font-size: 12px; color: var(--faint);
+          margin: 20px 0 0; line-height: 1.9;
         }
 
         .posts ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
@@ -234,6 +267,7 @@ export default async function Home() {
           h1 { font-size: 28px; }
           .grid { grid-template-columns: 1fr; }
           .vgrid { grid-template-columns: 1fr; }
+          .cgrid { grid-template-columns: 1fr; }
           .ambience { margin-bottom: 56px; }
           .quote { padding: 28px 18px 20px; }
           .quote p { font-size: 14px; line-height: 1.95; }

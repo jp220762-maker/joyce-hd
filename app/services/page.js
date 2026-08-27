@@ -1,5 +1,4 @@
 import { getContent } from '../../lib/store.js';
-import ContactForm from '../ContactForm';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,8 +19,8 @@ export default async function ServicesPage() {
       </header>
 
       <section className="items">
-        {c.services.items.map((s) => (
-          <article key={s.name} className="item">
+        {(c.services.items || []).map((s) => (
+          <a key={s.name} className="item" href={`/services/${s.slug || ''}`}>
             <div className="head">
               <h2>{s.name}</h2>
               <div className="tags">
@@ -30,29 +29,15 @@ export default async function ServicesPage() {
               </div>
             </div>
             <p className="desc">{s.desc}</p>
-          </article>
+            <span className="go">看詳細介紹 →</span>
+          </a>
         ))}
       </section>
 
-      <section id="contact" className="booking">
-        <h3>{c.booking.heading}</h3>
-        <p className="sub">{c.booking.lede}</p>
-        {c.booking.embedUrl ? (
-          <div className="embed">
-            <iframe src={c.booking.embedUrl} title="預約時段" loading="lazy" />
-          </div>
-        ) : (
-          <p className="note">{c.booking.note}</p>
-        )}
-        <div className="cform">
-          <ContactForm services={c.services.items.map((s) => s.name)} />
-        </div>
-      </section>
-
-      {c.services.faq?.length > 0 && (
+      {(c.services.faq?.length || 0) > 0 && (
         <section className="faq">
           <h3>常見問題</h3>
-          {c.services.faq.map((f, i) => (
+          {(c.services.faq || []).map((f, i) => (
             <details key={i}>
               <summary>{f.q}</summary>
               <p>{f.a}</p>
@@ -75,9 +60,12 @@ export default async function ServicesPage() {
 
         .items { display: grid; gap: 14px; }
         .item {
+          display: block; text-decoration: none; color: inherit;
           background: var(--paper); border: 1px solid var(--line);
           border-radius: 14px; padding: 26px 26px;
         }
+        .item:hover { border-color: var(--coffee); background: #fff; }
+        .go { display: inline-block; margin-top: 14px; font-size: 14px; color: var(--coffee); }
         .head {
           display: flex; align-items: baseline; justify-content: space-between;
           gap: 12px; flex-wrap: wrap; margin-bottom: 12px;
