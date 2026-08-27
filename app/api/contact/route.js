@@ -63,7 +63,7 @@ export async function POST(req) {
       method: 'POST',
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: 'J頁微光 <onboarding@resend.dev>',
+        from: 'J頁有光 <onboarding@resend.dev>',
         to: [to],
         reply_to: email,
         subject: `【網站來信】${name}${topic ? '・' + topic : ''}`,
