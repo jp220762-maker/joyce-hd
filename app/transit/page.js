@@ -33,25 +33,6 @@ export default async function TransitPage() {
       <div className="chart" dangerouslySetInnerHTML={{ __html: svg }} />
 
       <section className="read">
-        <h2>今天的能量重點</h2>
-        <div className="cards">
-          <div className="c">
-            <span>太陽所在</span>
-            <b>{sun.gate}.{sun.line}</b>
-            <p>今天集體意識的主題落在第 {sun.gate} 閘門第 {sun.line} 爻。太陽每約 5.6 天換一個閘門，是流日裡最主要的能量基調。</p>
-          </div>
-          <div className="c">
-            <span>今日類型</span>
-            <b>{info.type}</b>
-            <p>如果把此刻的天空當成一個人，他會是{info.type}。這代表今天整體的行動節奏——{info.strategy}。</p>
-          </div>
-          <div className="c">
-            <span>定義中心</span>
-            <b>{(info.centers || []).length} 個</b>
-            <p>{(info.centers || []).join('、') || '無'}。這些中心今天被啟動，相關的能量在集體中比較活躍。</p>
-          </div>
-        </div>
-
         <div className="how">
           <h3>怎麼用流日？</h3>
           <p>流日不是預測，是背景音樂。它描述的是「今天的天空長什麼樣子」，而不是「你今天會發生什麼事」。</p>
@@ -61,7 +42,7 @@ export default async function TransitPage() {
 
         {gateData && lineData && (
           <div className="lineread">
-            <h3>☀️ 今日爻辭 【流日 {sun.gate}.{sun.line}】</h3>
+            <h3>今日爻辭 【流日 {sun.gate}.{sun.line}】</h3>
             <p className="gatemeta">
               第 {sun.gate} 號閘門・{gateData.name}（{gateData.hexagram}）
               {gateData.center && <span> · {gateData.center}</span>}
@@ -72,15 +53,15 @@ export default async function TransitPage() {
 
             <div className="lgrid">
               <div className="lcard exalt">
-                <span>擢升（上升）{lineData.exaltPlanet}</span>
+                <span>上升{lineData.exaltPlanet}</span>
                 <p>{lineData.exaltText}</p>
               </div>
               <div className="lcard detriment">
-                <span>衰落（下降）{lineData.detrimentPlanet}</span>
+                <span>下降{lineData.detrimentPlanet}</span>
                 <p>{lineData.detrimentText}</p>
               </div>
             </div>
-            <p className="srcnote">原始爻辭・擢升・衰落解讀來源：《區分的科學》(IHDS)</p>
+            <p className="srcnote">資料來源:《區分的科學》中文版</p>
 
             <hr className="div" />
 
