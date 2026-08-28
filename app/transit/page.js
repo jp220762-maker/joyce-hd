@@ -64,12 +64,7 @@ export default async function TransitPage() {
 
             <hr className="div" />
 
-            <p className="subheading">Joyce 的每日應用</p>
-            <div className="lgrid">
-              <div className="lcard">
-                <span>當日力學機制</span>
-                <p>{lineData.mechanism}</p>
-              </div>
+            <div className="lgrid single">
               <div className="lcard">
                 <span>當日生活指引</span>
                 <p>{lineData.guidance}</p>
@@ -128,7 +123,7 @@ export default async function TransitPage() {
         .lcard.detriment span { color: var(--terracotta); }
         .srcnote { font-size: 11px; color: var(--faint); margin: 10px 0 0; text-align: right; }
         .div { border: none; border-top: 1px dashed var(--line); margin: 24px 0; }
-        .subheading { font-size: 13px; color: var(--coffee); font-weight: 700; letter-spacing: 1px; margin: 0 0 14px; }
+        .lgrid.single { grid-template-columns: 1fr; }
         @media (max-width: 720px) { .lgrid { grid-template-columns: 1fr; } }
         .note { font-size: 13px; color: var(--faint); text-align: center; margin-top: 24px; }
         @media (max-width: 720px) { .cards { grid-template-columns: 1fr; } }
