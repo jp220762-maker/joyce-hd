@@ -275,6 +275,20 @@ export default function ContentManager({ adminKey }) {
               <input placeholder="服務名稱" value={s.name}
                 onChange={(e) => { const a=[...(c.services.items || [])]; a[i]={...s,name:e.target.value}; up(['services','items'],a); }} />
               <div className="two">
+                <L t="此項目是否顯示（列表/首頁/詳細頁）">
+                  <select value={s.show !== false ? '1' : '0'}
+                    onChange={(e) => { const a=[...(c.services.items || [])]; a[i]={...s,show:e.target.value==='1'}; up(['services','items'],a); }}>
+                    <option value="1">顯示</option><option value="0">隱藏</option>
+                  </select>
+                </L>
+                <L t="預約狀態">
+                  <select value={s.available !== false ? '1' : '0'}
+                    onChange={(e) => { const a=[...(c.services.items || [])]; a[i]={...s,available:e.target.value==='1'}; up(['services','items'],a); }}>
+                    <option value="1">開放預約</option><option value="0">不開放（改顯示 Email／LINE 聯繫）</option>
+                  </select>
+                </L>
+              </div>
+              <div className="two">
                 <input placeholder="時長" value={s.duration}
                   onChange={(e) => { const a=[...(c.services.items || [])]; a[i]={...s,duration:e.target.value}; up(['services','items'],a); }} />
                 <input placeholder="價格" value={s.price}

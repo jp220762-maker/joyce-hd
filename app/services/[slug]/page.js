@@ -15,9 +15,9 @@ export default async function ServiceDetail({ params }) {
   const c = await getContent();
   const items = c.services.items || [];
   const s = items.find((x) => x.slug === params.slug);
-  if (!s) notFound();
+  if (!s || s.show === false) notFound();
 
-  const others = items.filter((x) => x.slug !== s.slug).slice(0, 3);
+  const others = items.filter((x) => x.slug !== s.slug && x.show !== false).slice(0, 3);
 
   return (
     <main>
@@ -31,6 +31,7 @@ export default async function ServiceDetail({ params }) {
           <span className="dur">{s.duration}</span>
           <span className="price">{s.price}</span>
           <span className="mode">線上／實體皆可</span>
+          {s.available === false && <span className="unavail">暫不開放預約</span>}
         </div>
         <p className="lead">{s.desc}</p>
       </header>
@@ -70,18 +71,39 @@ export default async function ServiceDetail({ params }) {
 
       {/* 預約：在服務介紹之後 */}
       <section id="booking" className="booking">
-        <h2 className="bh">{c.booking.heading}</h2>
-        <p className="bsub">{c.booking.lede}</p>
-        {c.booking.embedUrl ? (
-          <div className="embed">
-            <iframe src={c.booking.embedUrl} title="預約時段" loading="lazy" />
-          </div>
+        {s.available === false ? (
+          <>
+            <h2 className="bh">目前暫不開放預約</h2>
+            <p className="bsub">歡迎透過以下方式直接與我聯繫，我會盡快回覆你。</p>
+            <div className="unavail-contact">
+              {c.contact?.email && (
+                <a className="cbtn mail" href={`mailto:${c.contact.email}?subject=${encodeURIComponent(`【服務詢問】${s.name}`)}`}>
+                  ✉️ Email 聯繫：{c.contact.email}
+                </a>
+              )}
+              {c.contact?.line && (
+                <a className="cbtn line" href={`https://line.me/ti/p/~${encodeURIComponent(c.contact.line)}`} target="_blank" rel="noopener">
+                  💬 加 LINE 好友：{c.contact.line}
+                </a>
+              )}
+            </div>
+          </>
         ) : (
-          <p className="note">{c.booking.note}</p>
+          <>
+            <h2 className="bh">{c.booking.heading}</h2>
+            <p className="bsub">{c.booking.lede}</p>
+            {c.booking.embedUrl ? (
+              <div className="embed">
+                <iframe src={c.booking.embedUrl} title="預約時段" loading="lazy" />
+              </div>
+            ) : (
+              <p className="note">{c.booking.note}</p>
+            )}
+            <div className="cform">
+              <ContactForm services={items.map((x) => x.name)} />
+            </div>
+          </>
         )}
-        <div className="cform">
-          <ContactForm services={items.map((x) => x.name)} />
-        </div>
       </section>
 
       {others.length > 0 && (
@@ -111,6 +133,7 @@ export default async function ServiceDetail({ params }) {
         .dur { background: var(--paper); border: 1px solid var(--line); color: var(--ink); }
         .price { background: var(--gold); color: #fff; }
         .mode { background: var(--paper); border: 1px solid var(--line); color: var(--faint); }
+        .unavail { background: var(--faint); color: #fff; }
         .lead { font-size: 16px; line-height: 2; color: var(--faint); margin: 0; }
 
         .intro p { font-size: 17px; line-height: 2.15; margin: 0 0 24px; color: var(--ink); }
@@ -153,6 +176,15 @@ export default async function ServiceDetail({ params }) {
         .embed iframe { width: 100%; height: 620px; border: 0; display: block; }
         .note { text-align: center; font-size: 14px; color: var(--faint); line-height: 2; margin: 0 0 24px; }
         .cform { max-width: 520px; margin: 0 auto; }
+        .unavail-contact { display: flex; flex-direction: column; gap: 12px; max-width: 440px; margin: 0 auto; }
+        .cbtn {
+          display: block; text-decoration: none; text-align: center;
+          padding: 16px 20px; border-radius: 12px; font-size: 15px; font-weight: 700;
+          border: 1px solid var(--line); background: #fff; color: var(--ink);
+        }
+        .cbtn:hover { border-color: var(--coffee); }
+        .cbtn.mail { color: var(--coffee); }
+        .cbtn.line { color: #06C755; }
 
         .others { margin-top: 56px; }
         .ogrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }

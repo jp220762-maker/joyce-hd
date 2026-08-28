@@ -19,13 +19,14 @@ export default async function ServicesPage() {
       </header>
 
       <section className="items">
-        {(c.services.items || []).map((s) => (
+        {(c.services.items || []).filter((s) => s.show !== false).map((s) => (
           <a key={s.name} className="item" href={`/services/${s.slug || ''}`}>
             <div className="head">
               <h2>{s.name}</h2>
               <div className="tags">
                 <span className="dur">{s.duration}</span>
                 <span className="price">{s.price}</span>
+                {s.available === false && <span className="unavail">暫不開放</span>}
               </div>
             </div>
             <p className="desc">{s.desc}</p>
@@ -76,6 +77,10 @@ export default async function ServicesPage() {
         .price {
           font-size: 13px; padding: 4px 14px; border-radius: 16px;
           background: var(--gold); color: #fff; white-space: nowrap;
+        }
+        .unavail {
+          font-size: 12px; padding: 4px 12px; border-radius: 16px;
+          background: var(--faint); color: #fff; white-space: nowrap;
         }
         .desc { margin: 0; font-size: 15px; line-height: 2; color: var(--ink); }
 

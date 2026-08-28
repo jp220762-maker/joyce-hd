@@ -29,11 +29,11 @@ export default async function Home() {
       </section>
     ),
 
-    services: c.services?.show !== false && (c.services?.items?.length > 0) && (
+    services: c.services?.show !== false && ((c.services?.items || []).filter((s) => s.show !== false).length > 0) && (
       <section key="services" className="services">
         <h2>我能陪你做的</h2>
         <div className="grid">
-          {(c.services.items || []).slice(0, 3).map((s) => (
+          {(c.services.items || []).filter((s) => s.show !== false).slice(0, 3).map((s) => (
             <a key={s.name} className="card" href={`/services/${s.slug || ''}`}>
               <h3>{s.name}</h3>
               <p className="meta">{s.duration}</p>
