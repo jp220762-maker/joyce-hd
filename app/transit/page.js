@@ -66,8 +66,25 @@ export default async function TransitPage() {
               第 {sun.gate} 號閘門・{gateData.name}（{gateData.hexagram}）
               {gateData.center && <span> · {gateData.center}</span>}
               {gateData.circuit && <span> · {gateData.circuit}</span>}
+              {gateData.quadrant && <span> · {gateData.quadrant}</span>}
             </p>
-            <p className="theme">爻辭主題：{lineData.theme}</p>
+            <p className="theme">爻辭：{lineData.theme}</p>
+
+            <div className="lgrid">
+              <div className="lcard exalt">
+                <span>擢升（上升）{lineData.exaltPlanet}</span>
+                <p>{lineData.exaltText}</p>
+              </div>
+              <div className="lcard detriment">
+                <span>衰落（下降）{lineData.detrimentPlanet}</span>
+                <p>{lineData.detrimentText}</p>
+              </div>
+            </div>
+            <p className="srcnote">原始爻辭・擢升・衰落解讀來源：《區分的科學》(IHDS)</p>
+
+            <hr className="div" />
+
+            <p className="subheading">Joyce 的每日應用</p>
             <div className="lgrid">
               <div className="lcard">
                 <span>當日力學機制</span>
@@ -131,7 +148,12 @@ export default async function TransitPage() {
           background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 18px 18px;
         }
         .lcard span { display: block; font-size: 12px; letter-spacing: 2px; color: var(--gold); margin-bottom: 8px; font-weight: 700; }
-        .lcard p { margin: 0; font-size: 14px; line-height: 1.95; color: var(--ink); }
+        .lcard p { margin: 0; font-size: 14px; line-height: 1.95; color: var(--ink); white-space: pre-line; }
+        .lcard.exalt span { color: var(--sage); }
+        .lcard.detriment span { color: var(--terracotta); }
+        .srcnote { font-size: 11px; color: var(--faint); margin: 10px 0 0; text-align: right; }
+        .div { border: none; border-top: 1px dashed var(--line); margin: 24px 0; }
+        .subheading { font-size: 13px; color: var(--coffee); font-weight: 700; letter-spacing: 1px; margin: 0 0 14px; }
         .ovnote { font-size: 13px; color: var(--faint); margin: 16px 0 0; line-height: 1.9; }
         @media (max-width: 720px) { .lgrid { grid-template-columns: 1fr; } }
         .note { font-size: 13px; color: var(--faint); text-align: center; margin-top: 24px; }

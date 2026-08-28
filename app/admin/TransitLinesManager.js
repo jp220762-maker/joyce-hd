@@ -108,20 +108,36 @@ export default function TransitLinesManager({ adminKey }) {
                     <input placeholder="所屬迴路群" value={gate.circuit}
                       onChange={(e) => upGate(g, 'circuit', e.target.value)} />
                   </div>
-                  <input placeholder="閘門核心本質" value={gate.essence}
-                    onChange={(e) => upGate(g, 'essence', e.target.value)} />
+                  <div className="two">
+                    <input placeholder="所屬象限（例如：(IV) 突變）" value={gate.quadrant || ''}
+                      onChange={(e) => upGate(g, 'quadrant', e.target.value)} />
+                    <input placeholder="閘門核心本質" value={gate.essence}
+                      onChange={(e) => upGate(g, 'essence', e.target.value)} />
+                  </div>
 
                   <hr />
                   {['1','2','3','4','5','6'].map((l) => (
                     <div key={l} className="linerow">
                       <b>【流日 {g}.{l}】</b>
-                      <input placeholder="爻辭主題（例如：創造 (Creation)）"
+                      <input placeholder="爻辭（原始爻辭名稱，來源：區分的科學）"
                         value={gate.lines[l].theme}
                         onChange={(e) => upLine(g, l, 'theme', e.target.value)} />
-                      <textarea rows={2} placeholder="當日力學機制"
+                      <div className="two">
+                        <input placeholder="擢升（上升）行星符號" value={gate.lines[l].exaltPlanet || ''}
+                          onChange={(e) => upLine(g, l, 'exaltPlanet', e.target.value)} />
+                        <input placeholder="衰落（下降）行星符號" value={gate.lines[l].detrimentPlanet || ''}
+                          onChange={(e) => upLine(g, l, 'detrimentPlanet', e.target.value)} />
+                      </div>
+                      <textarea rows={2} placeholder="擢升（上升）解讀"
+                        value={gate.lines[l].exaltText || ''}
+                        onChange={(e) => upLine(g, l, 'exaltText', e.target.value)} />
+                      <textarea rows={2} placeholder="衰落（下降）解讀"
+                        value={gate.lines[l].detrimentText || ''}
+                        onChange={(e) => upLine(g, l, 'detrimentText', e.target.value)} />
+                      <textarea rows={2} placeholder="當日力學機制（Joyce 的每日應用）"
                         value={gate.lines[l].mechanism}
                         onChange={(e) => upLine(g, l, 'mechanism', e.target.value)} />
-                      <textarea rows={2} placeholder="當日生活指引"
+                      <textarea rows={2} placeholder="當日生活指引（Joyce 的每日應用）"
                         value={gate.lines[l].guidance}
                         onChange={(e) => upLine(g, l, 'guidance', e.target.value)} />
                     </div>
