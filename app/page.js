@@ -15,6 +15,105 @@ export default async function Home() {
   const [c, posts] = await Promise.all([getContent(), getAllPosts()]);
   const featured = posts.slice(0, 4);
 
+  // 依後台設定的順序渲染各區塊；找不到內容或被設為隱藏的區塊自動略過
+  const order = (c.homepage?.order && c.homepage.order.length) ? c.homepage.order
+    : ['ambience', 'services', 'chart', 'testimonials', 'cases', 'posts'];
+
+  const sections = {
+    ambience: c.site.showAmbience && c.site.ambienceUrl && (
+      <section key="ambience" className="ambience">
+        <img src={c.site.ambienceUrl} alt="" />
+        {c.site.ambienceQuote ? (
+          <div className="quote"><p>{c.site.ambienceQuote}</p></div>
+        ) : null}
+      </section>
+    ),
+
+    services: c.services?.show !== false && (c.services?.items?.length > 0) && (
+      <section key="services" className="services">
+        <h2>我能陪你做的</h2>
+        <div className="grid">
+          {(c.services.items || []).slice(0, 3).map((s) => (
+            <a key={s.name} className="card" href={`/services/${s.slug || ''}`}>
+              <h3>{s.name}</h3>
+              <p className="meta">{s.duration}</p>
+              <p className="desc">{s.desc}</p>
+            </a>
+          ))}
+        </div>
+        <p className="more"><a href="/services">看所有服務項目 →</a></p>
+      </section>
+    ),
+
+    chart: (
+      <section key="chart" id="chart" className="chart-sec">
+        <h2>先從認識自己開始</h2>
+        <p className="sub">
+          輸入出生日期、時間與地點，生成專屬人體圖。<br />
+          出生時間越精確，人生角色與輪迴交叉的判定越準確。
+        </p>
+        <BirthForm />
+      </section>
+    ),
+
+    testimonials: c.testimonials?.show !== false && (c.testimonials?.items?.length > 0) && (
+      <section key="testimonials" className="voices">
+        <h2>{c.testimonials.heading}</h2>
+        {c.testimonials.lede && <p className="vsub">{c.testimonials.lede}</p>}
+        <div className="vgrid">
+          {(c.testimonials.items || []).map((t, i) => (
+            <figure key={i}>
+              <blockquote>{t.text}</blockquote>
+              <figcaption>
+                <b>{t.name}</b>
+                {t.title && <span>{t.title}</span>}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+    ),
+
+    cases: c.cases?.show !== false && (c.cases?.items?.length > 0) && (
+      <section key="cases" className="cases">
+        <h2>{c.cases.heading}</h2>
+        <div className="cgrid">
+          {(c.cases.items || []).map((k, i) => (
+            <article key={i} className={k.image && k.showImage !== false ? 'with-img' : ''}>
+              {k.image && k.showImage !== false && (
+                <div className="cimg"><img src={k.image} alt="" /></div>
+              )}
+              <div className="ctext">
+                <h3>{k.title}</h3>
+                <p className="who">{k.who}</p>
+                <p className="story">{k.story}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+        <p className="disclaimer">{c.cases.lede}</p>
+      </section>
+    ),
+
+    posts: c.postsSection?.show !== false && featured.length > 0 && (
+      <section key="posts" className="posts">
+        <h2>{c.postsSection?.heading || '最近的文字'}</h2>
+        <ul>
+          {featured.map((p) => (
+            <li key={p.id}>
+              <a href={`/articles/${p.id}`}>
+                <span className="cat">{p.category}</span>
+                <b>{p.title}</b>
+                <span className="ex">{p.excerpt}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p className="more"><a href="/articles">閱讀更多文章 →</a></p>
+      </section>
+    ),
+  };
+
   return (
     <main>
       {/* 品牌開場 */}
@@ -25,7 +124,7 @@ export default async function Home() {
           <p className="tagline">{c.site.tagline}</p>
           <div className="cta">
             <a className="primary" href="#chart">免費生成人類圖</a>
-            <a className="ghost" href="/about">關於我</a>
+            {c.about?.show !== false && <a className="ghost" href="/about">關於我</a>}
           </div>
         </div>
         <div className="portrait">
@@ -43,95 +142,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 品牌氛圍 */}
-      {c.site.showAmbience && c.site.ambienceUrl && (
-        <section className="ambience">
-          <img src={c.site.ambienceUrl} alt="" />
-          {c.site.ambienceQuote ? (
-            <div className="quote"><p>{c.site.ambienceQuote}</p></div>
-          ) : null}
-        </section>
-      )}
-
-      {/* 服務簡介 */}
-      <section className="services">
-        <h2>我能陪你做的</h2>
-        <div className="grid">
-          {(c.services.items || []).slice(0, 3).map((s) => (
-            <a key={s.name} className="card" href={`/services/${s.slug || ''}`}>
-              <h3>{s.name}</h3>
-              <p className="meta">{s.duration}</p>
-              <p className="desc">{s.desc}</p>
-            </a>
-          ))}
-        </div>
-        <p className="more"><a href="/services">看所有服務項目 →</a></p>
-      </section>
-
-      {/* 免費排盤 */}
-      <section id="chart" className="chart-sec">
-        <h2>先從認識自己開始</h2>
-        <p className="sub">
-          輸入出生日期、時間與地點，生成專屬人體圖。<br />
-          出生時間越精確，人生角色與輪迴交叉的判定越準確。
-        </p>
-        <BirthForm />
-      </section>
-
-      {/* 顧客回饋 */}
-      {c.testimonials?.show !== false && (c.testimonials?.items?.length > 0) && (
-        <section className="voices">
-          <h2>{c.testimonials.heading}</h2>
-          {c.testimonials.lede && <p className="vsub">{c.testimonials.lede}</p>}
-          <div className="vgrid">
-            {(c.testimonials.items || []).map((t, i) => (
-              <figure key={i}>
-                <blockquote>{t.text}</blockquote>
-                <figcaption>
-                  <b>{t.name}</b>
-                  {t.title && <span>{t.title}</span>}
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 個案分享 */}
-      {c.cases?.show !== false && (c.cases?.items?.length > 0) && (
-        <section className="cases">
-          <h2>{c.cases.heading}</h2>
-          <div className="cgrid">
-            {(c.cases.items || []).map((k, i) => (
-              <article key={i}>
-                <h3>{k.title}</h3>
-                <p className="who">{k.who}</p>
-                <p className="story">{k.story}</p>
-              </article>
-            ))}
-          </div>
-          <p className="disclaimer">{c.cases.lede}</p>
-        </section>
-      )}
-
-      {/* 文章精選 */}
-      {featured.length > 0 && (
-        <section className="posts">
-          <h2>最近的文字</h2>
-          <ul>
-            {featured.map((p) => (
-              <li key={p.id}>
-                <a href={`/articles/${p.id}`}>
-                  <span className="cat">{p.category}</span>
-                  <b>{p.title}</b>
-                  <span className="ex">{p.excerpt}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-          <p className="more"><a href="/articles">閱讀更多文章 →</a></p>
-        </section>
-      )}
+      {order.map((key) => sections[key] || null)}
 
       <style>{`
         main { max-width: 1060px; margin: 0 auto; padding: 40px 20px 80px; }
@@ -238,6 +249,15 @@ export default async function Home() {
           background: var(--paper); border: 1px solid var(--line);
           border-radius: 14px; padding: 28px 26px;
         }
+        .cgrid article.with-img {
+          grid-column: 1 / -1; display: flex; gap: 28px; align-items: flex-start;
+        }
+        .cgrid .cimg { flex: 0 0 260px; }
+        .cgrid .cimg img {
+          width: 100%; height: auto; display: block; border-radius: 10px;
+          border: 1px solid var(--line);
+        }
+        .cgrid .ctext { flex: 1; min-width: 0; }
         .cgrid h3 { font-size: 19px; margin: 0 0 6px; font-weight: 700; line-height: 1.5; }
         .cgrid .who { font-size: 12px; color: var(--gold); margin: 0 0 14px; letter-spacing: 1px; }
         .cgrid .story { font-size: 15px; line-height: 2.05; margin: 0; color: var(--ink); }
@@ -268,6 +288,8 @@ export default async function Home() {
           .grid { grid-template-columns: 1fr; }
           .vgrid { grid-template-columns: 1fr; }
           .cgrid { grid-template-columns: 1fr; }
+          .cgrid article.with-img { flex-direction: column; }
+          .cgrid .cimg { flex: none; width: 100%; }
           .ambience { margin-bottom: 56px; }
           .quote { padding: 28px 18px 20px; }
           .quote p { font-size: 14px; line-height: 1.95; }

@@ -94,6 +94,7 @@ export default function PostManager({ adminKey }) {
         <Editor
           post={editing === 'new' ? null : editing}
           cats={cats}
+          adminKey={adminKey}
           onClose={() => setEditing(null)}
           onSave={async (data) => {
             const ok = await send({
@@ -221,11 +222,14 @@ function CatManager({ cats, posts, send }) {
   );
 }
 
-function Editor({ post, cats, onClose, onSave }) {
+function Editor({ post, cats, adminKey, onClose, onSave }) {
   const [title, setTitle] = useState(post?.title || '');
   const [category, setCategory] = useState(post?.category || cats[0] || '');
   const [excerpt, setExcerpt] = useState(post?.excerpt || '');
   const [body, setBody] = useState((post?.body || []).join('\n'));
+  const [image, setImage] = useState(post?.image || '');
+  const [showImage, setShowImage] = useState(post?.showImage !== false);
+  const [slotId] = useState(post?.id || `new-${Date.now()}`);
 
   return (
     <div className="overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
@@ -254,11 +258,25 @@ function Editor({ post, cats, onClose, onSave }) {
                     placeholder="直接貼上文章內容，每一段換行即可" />
         </label>
 
+        <PostImageSlot
+          label="配圖（選填，可用於左右對照氛圍圖）"
+          slot={`post-${slotId}`}
+          adminKey={adminKey}
+          current={image}
+          onDone={setImage}
+        />
+        <label>是否顯示這張圖片
+          <select value={showImage ? '1' : '0'} onChange={(e) => setShowImage(e.target.value === '1')}>
+            <option value="1">顯示</option>
+            <option value="0">隱藏（保留圖片，僅不顯示）</option>
+          </select>
+        </label>
+
         <div className="pfoot">
           <span className="cnt">{body.replace(/\n/g, '').length} 字</span>
           <div>
             <button className="ghost" onClick={onClose}>取消</button>
-            <button className="primary" onClick={() => onSave({ title, category, excerpt, body })}>
+            <button className="primary" onClick={() => onSave({ title, category, excerpt, body, image, showImage })}>
               儲存
             </button>
           </div>
@@ -297,6 +315,51 @@ function Editor({ post, cats, onClose, onSave }) {
         }
         .ghost { background: transparent; border: 1px solid var(--line) !important; color: var(--ink); }
         .primary { background: var(--terracotta); color: #fff; font-weight: 700; }
+      `}</style>
+    </div>
+  );
+}
+
+function PostImageSlot({ label, slot, adminKey, current, onDone }) {
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState('');
+
+  async function pick(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { setNote('圖片超過 2MB，請先壓縮'); return; }
+    setBusy(true); setNote('上傳中…');
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const r = await fetch(`/api/upload?key=${encodeURIComponent(adminKey)}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slot, dataUrl: reader.result }),
+      });
+      const d = await r.json();
+      if (r.ok) { onDone(d.url); setNote('✓ 已上傳，記得按「儲存」'); }
+      else setNote('✗ ' + (d.error || '失敗'));
+      setBusy(false);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  return (
+    <div className="pislot">
+      <span className="lb">{label}</span>
+      {current && <img className="thumb" src={current} alt="" />}
+      <div className="row2">
+        <input type="file" accept="image/png,image/jpeg,image/webp" onChange={pick} disabled={busy} />
+        {note && <em>{note}</em>}
+      </div>
+      <style jsx>{`
+        .pislot { margin-bottom: 20px; }
+        .lb { display: block; font-size: 13px; color: var(--faint); letter-spacing: 1px; margin-bottom: 8px; }
+        .thumb {
+          max-width: 220px; max-height: 120px; display: block; margin-bottom: 10px;
+          border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: 6px;
+        }
+        .row2 { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        em { font-style: normal; font-size: 12px; color: var(--coffee); }
       `}</style>
     </div>
   );

@@ -16,21 +16,29 @@ export default async function ArticlePage({ params }) {
   const i = all.findIndex((p) => p.id === post.id);
   const prev = all[i - 1];
   const next = all[i + 1];
+  const hasImage = !!(post.image && post.showImage !== false);
 
   return (
-    <main>
+    <main className={hasImage ? 'wide' : ''}>
       <nav className="top">
         <a href="/articles">← 所有文章</a>
         <span className="cat">{post.category}</span>
       </nav>
 
-      <article>
-        <h1>{post.title}</h1>
-        <p className="meta">閱讀約 {post.minutes} 分鐘</p>
-        <div className="body">
-          {post.body.map((para, k) => <p key={k}>{para}</p>)}
-        </div>
-      </article>
+      <div className={hasImage ? 'layout' : ''}>
+        {hasImage && (
+          <div className="artimg">
+            <img src={post.image} alt="" />
+          </div>
+        )}
+        <article>
+          <h1>{post.title}</h1>
+          <p className="meta">閱讀約 {post.minutes} 分鐘</p>
+          <div className="body">
+            {post.body.map((para, k) => <p key={k}>{para}</p>)}
+          </div>
+        </article>
+      </div>
 
       <nav className="pager">
         {prev ? (
@@ -47,12 +55,19 @@ export default async function ArticlePage({ params }) {
 
       <style>{`
         main { max-width: 720px; margin: 0 auto; padding: 32px 20px 72px; }
+        main.wide { max-width: 1060px; }
         .top { display: flex; align-items: center; justify-content: space-between;
                margin-bottom: 36px; gap: 12px; }
         .top a { font-size: 14px; text-decoration: none; }
         .top a:hover { text-decoration: underline; }
         .cat { font-size: 12px; letter-spacing: 2px; color: var(--bg);
                background: var(--coffee); padding: 5px 14px; border-radius: 20px; }
+        .layout { display: grid; grid-template-columns: 340px 1fr; gap: 40px; align-items: start; }
+        .artimg { position: sticky; top: 24px; }
+        .artimg img {
+          width: 100%; height: auto; display: block; border-radius: 14px;
+          border: 1px solid var(--line); box-shadow: 0 8px 32px rgba(68,58,49,.10);
+        }
         h1 { font-size: 32px; font-weight: 700; line-height: 1.5;
              margin: 0 0 12px; letter-spacing: 1px; }
         .meta { font-size: 13px; color: var(--faint); margin: 0 0 36px;
@@ -68,6 +83,10 @@ export default async function ArticlePage({ params }) {
         .pager .n { text-align: right; }
         .pager span { display: block; font-size: 12px; color: var(--faint); margin-bottom: 6px; }
         .pager b { font-size: 15px; font-weight: 700; line-height: 1.5; }
+        @media (max-width: 860px) {
+          .layout { grid-template-columns: 1fr; gap: 24px; }
+          .artimg { position: static; max-width: 320px; margin: 0 auto; }
+        }
         @media (max-width: 720px) {
           main { padding: 24px 16px 56px; }
           h1 { font-size: 25px; }

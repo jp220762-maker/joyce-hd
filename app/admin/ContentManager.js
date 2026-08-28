@@ -20,6 +20,8 @@ export default function ContentManager({ adminKey }) {
           testimonials: { heading:'聽聽他們怎麼說', lede:'', show:true, items:[], ...(x.testimonials||{}) },
           cases: { heading:'個案分享', lede:'', show:true, items:[], ...(x.cases||{}) },
           booking: { heading:'預約', lede:'', embedUrl:'', note:'', ...(x.booking||{}) },
+          homepage: { order:['ambience','services','chart','testimonials','cases','posts'], ...(x.homepage||{}) },
+          postsSection: { heading:'最近的文字', show:true, ...(x.postsSection||{}) },
           contact: { email:'', line:'', social:[], ...(x.contact||{}) },
         });
       });
@@ -56,6 +58,7 @@ export default function ContentManager({ adminKey }) {
     ['cases', '個案分享'],
     ['about', '關於我'],
     ['services', '服務項目'],
+    ['layout', '首頁排版'],
     ['faq', '常見問題'],
     ['booking', '預約設定'],
     ['contact', '聯絡與社群'],
@@ -198,16 +201,30 @@ export default function ContentManager({ adminKey }) {
                 onChange={(e) => { const a=[...(c.cases.items||[])]; a[i]={...k,who:e.target.value}; up(['cases','items'],a); }} />
               <textarea rows={5} placeholder="故事內容" value={k.story}
                 onChange={(e) => { const a=[...(c.cases.items||[])]; a[i]={...k,story:e.target.value}; up(['cases','items'],a); }} />
+              <ImageSlot label="配圖（選填，可用於左右對照解圖）" slot={`case-${k.id || i}`} adminKey={adminKey}
+                current={k.image} onDone={(u) => { const a=[...(c.cases.items||[])]; a[i]={...k,image:u}; up(['cases','items'],a); }} />
+              <L t="是否顯示這張圖片">
+                <select value={k.showImage !== false ? '1' : '0'}
+                  onChange={(e) => { const a=[...(c.cases.items||[])]; a[i]={...k,showImage:e.target.value==='1'}; up(['cases','items'],a); }}>
+                  <option value="1">顯示</option><option value="0">隱藏（保留圖片，僅不顯示）</option>
+                </select>
+              </L>
             </div>
           ))}
           <button className="add" onClick={() => up(['cases','items'],
-            [...(c.cases.items||[]), { title:'', who:'', story:'' }])}>+ 新增個案</button>
+            [...(c.cases.items||[]), { id:'c'+Date.now(), title:'', who:'', story:'', image:'', showImage:true }])}>+ 新增個案</button>
         </div>
       )}
 
       {sec === 'about' && (
         <div className="pane">
           <L t="頁面標題"><input value={c.about.heading} onChange={(e) => up(['about','heading'], e.target.value)} /></L>
+          <L t="是否顯示（隱藏後導覽列不出現「關於我」連結）">
+            <select value={c.about.show !== false ? '1' : '0'}
+              onChange={(e) => up(['about','show'], e.target.value === '1')}>
+              <option value="1">顯示</option><option value="0">隱藏</option>
+            </select>
+          </L>
           <L t="內文（一段一行）">
             <textarea rows={14} value={(c.about.body || []).join('\n')}
               onChange={(e) => up(['about','body'], e.target.value.split('\n').map(s=>s.trim()).filter(Boolean))} />
@@ -241,6 +258,12 @@ export default function ContentManager({ adminKey }) {
         <div className="pane">
           <L t="頁面標題"><input value={c.services.heading} onChange={(e) => up(['services','heading'], e.target.value)} /></L>
           <L t="頁面說明"><input value={c.services.lede} onChange={(e) => up(['services','lede'], e.target.value)} /></L>
+          <L t="是否顯示於首頁（服務項目頁本身不受此影響）">
+            <select value={c.services.show !== false ? '1' : '0'}
+              onChange={(e) => up(['services','show'], e.target.value === '1')}>
+              <option value="1">顯示</option><option value="0">隱藏</option>
+            </select>
+          </L>
           {(c.services.items || []).map((s, i) => (
             <div key={i} className="row">
               <div className="rowhead">
@@ -273,6 +296,40 @@ export default function ContentManager({ adminKey }) {
           ))}
           <button className="add" onClick={() => up(['services','items'],
             [...(c.services.items || []), { name:'新服務', duration:'', price:'請洽詢', desc:'' }])}>+ 新增服務項目</button>
+        </div>
+      )}
+
+      {sec === 'layout' && (
+        <div className="pane">
+          <p className="sub">調整首頁各區塊的呈現順序（品牌開場與免費排盤固定在最上方，不列入排序）。若某區塊沒有內容或被設為「隱藏」，即使排在前面也不會顯示。</p>
+          {(c.homepage.order || []).map((key, i) => {
+            const LABELS = { ambience:'品牌氛圍圖', services:'服務簡介', chart:'免費排盤', testimonials:'顧客回饋', cases:'個案分享', posts:'文章精選' };
+            const order = c.homepage.order || [];
+            return (
+              <div key={key} className="ordrow">
+                <span className="oname">{LABELS[key] || key}</span>
+                <div className="ops">
+                  <button onClick={() => {
+                    if (i === 0) return;
+                    const a = [...order]; [a[i-1], a[i]] = [a[i], a[i-1]]; up(['homepage','order'], a);
+                  }} disabled={i === 0}>↑</button>
+                  <button onClick={() => {
+                    if (i === order.length - 1) return;
+                    const a = [...order]; [a[i], a[i+1]] = [a[i+1], a[i]]; up(['homepage','order'], a);
+                  }} disabled={i === order.length - 1}>↓</button>
+                </div>
+              </div>
+            );
+          })}
+          <hr />
+          <L t="文章精選 — 區塊標題（首頁）"><input value={c.postsSection.heading}
+            onChange={(e) => up(['postsSection','heading'], e.target.value)} /></L>
+          <L t="是否顯示於首頁（文章列表頁 /articles 不受此影響）">
+            <select value={c.postsSection.show !== false ? '1' : '0'}
+              onChange={(e) => up(['postsSection','show'], e.target.value === '1')}>
+              <option value="1">顯示</option><option value="0">隱藏</option>
+            </select>
+          </L>
         </div>
       )}
 
@@ -362,6 +419,18 @@ export default function ContentManager({ adminKey }) {
                padding: 16px; margin-bottom: 12px; background: #fff; }
         .rowhead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .rowhead b { font-size: 13px; color: var(--faint); letter-spacing: 1px; }
+        .ordrow {
+          display: flex; align-items: center; justify-content: space-between;
+          background: var(--paper); border: 1px solid var(--line);
+          border-radius: 10px; padding: 12px 16px; margin-bottom: 8px;
+        }
+        .ordrow .oname { font-size: 15px; font-weight: 700; }
+        .ordrow .ops { display: flex; gap: 6px; }
+        .ordrow .ops button {
+          font-size: 13px; padding: 6px 12px; border-radius: 7px; cursor: pointer;
+          border: 1px solid var(--line); background: #fff; color: var(--ink);
+        }
+        .ordrow .ops button:disabled { opacity: .35; cursor: default; }
         .del { font-size: 12px; color: var(--red); background: none;
                border: 1px solid #E8C9C4; border-radius: 6px; padding: 4px 12px; cursor: pointer; }
         .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }

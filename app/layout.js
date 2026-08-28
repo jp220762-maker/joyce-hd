@@ -20,7 +20,7 @@ export default async function RootLayout({ children }) {
             <img src={logoUrl} alt={siteName} style={{ height: `${logoH}px` }} />
           </a>
           <div className="links">
-            <a href="/about">關於我</a>
+            {c.about?.show !== false && <a href="/about">關於我</a>}
             <a href="/services">服務項目</a>
             <a href="/articles">文章</a>
             <a href="/transit">今日流日</a>

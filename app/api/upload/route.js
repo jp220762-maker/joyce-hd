@@ -27,7 +27,7 @@ export async function POST(req) {
   if (!authed(req)) return NextResponse.json({ error: '未授權' }, { status: 401 });
   try {
     const { slot, dataUrl } = await req.json();
-    if (!['logo', 'ambience', 'portrait'].includes(slot)) {
+    if (!/^[a-z0-9_-]{1,60}$/i.test(slot || '')) {
       return NextResponse.json({ error: '未知的圖片欄位' }, { status: 400 });
     }
     if (!/^data:image\/(png|jpeg|jpg|webp);base64,/.test(dataUrl || '')) {

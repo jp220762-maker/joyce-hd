@@ -33,7 +33,7 @@ export async function POST(req) {
         .split('\n').map((s) => s.trim()).filter(Boolean);
       if (!title) return NextResponse.json({ error: '請填寫標題' }, { status: 400 });
       if (!body.length) return NextResponse.json({ error: '請填寫內文' }, { status: 400 });
-      const data = { title, category, excerpt: excerpt || body[0].slice(0, 58), body };
+      const data = { title, category, excerpt: excerpt || body[0].slice(0, 58), body, image: b.image || '', showImage: b.showImage !== false };
       const post = act === 'create'
         ? await createPost(data)
         : await updatePost(String(b.id), data);
