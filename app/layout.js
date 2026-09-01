@@ -14,6 +14,14 @@ export default async function RootLayout({ children }) {
   const siteName = c.site?.name || 'J頁有光';
   return (
     <html lang="zh-Hant">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400;1,600&family=Noto+Serif+TC:wght@400;500;600;700;900&display=swap"
+        />
+      </head>
       <body>
         <nav className="sitenav">
           <a className="logo" href="/">
@@ -43,7 +51,8 @@ export default async function RootLayout({ children }) {
             --sage:      #9BAA8D;
             --gold:      #D9A95F;
             --red:       #C62828;
-            --font: Arial, 'Microsoft JhengHei', '微軟正黑體', 'PingFang TC', 'Noto Sans TC', sans-serif;
+            --font: 'Noto Serif TC', 'Playfair Display', Georgia, 'PingFang TC', serif;
+            --font-display: 'Playfair Display', 'Noto Serif TC', Georgia, 'PingFang TC', serif;
           }
           * { box-sizing: border-box; }
           html, body {
@@ -53,7 +62,8 @@ export default async function RootLayout({ children }) {
             -webkit-font-smoothing: antialiased;
           }
           a { color: var(--coffee); }
-          button, input, select { font-family: var(--font); }
+          button, input, select, textarea { font-family: var(--font); }
+          h1, h2, h3 { font-family: var(--font-display); }
           :focus-visible { outline: 2px solid var(--coffee); outline-offset: 2px; }
           @media (prefers-reduced-motion: reduce) {
             * { animation: none !important; transition: none !important; }
