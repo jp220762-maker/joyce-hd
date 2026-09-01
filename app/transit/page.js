@@ -64,12 +64,42 @@ export default async function TransitPage() {
 
             <hr className="div" />
 
-            <div className="lgrid single">
+            <div className="lgrid">
               <div className="lcard">
-                <span>當日生活指引</span>
-                <p>{lineData.guidance}</p>
+                <span>流日氣象解碼</span>
+                <p>{lineData.weather}</p>
+              </div>
+              <div className="lcard">
+                <span>生活實踐指南</span>
+                <p>{lineData.practice}</p>
               </div>
             </div>
+
+            {(gateData.channels?.length || 0) > 0 && (
+              <>
+                <hr className="div" />
+                <p className="subheading">接通的能量中心</p>
+                <div className="centerspill">
+                  {[...new Set(gateData.channels.flatMap((ch) => ch.centers))].map((c) => (
+                    <span key={c} className="pill">{c}</span>
+                  ))}
+                </div>
+
+                <p className="subheading chspace">通道分析</p>
+                <div className="chlist">
+                  {gateData.channels.map((ch, i) => (
+                    <div key={i} className="chcard">
+                      <p className="chname">
+                        {sun.gate}—{ch.partner}｜{ch.name}
+                      </p>
+                      <p className="chcenters">{ch.centers[0]} ↔ {ch.centers[1]}</p>
+                      <p className="chdesc">{ch.desc}</p>
+                    </div>
+                  ))}
+                </div>
+                <p className="channote">此為第 {sun.gate} 號閘門固定所屬的通道與中心，若你的本命圖恰好擁有搭配的另一閘門，今天便可能暫時體驗到這條通道接通的感受。</p>
+              </>
+            )}
           </div>
         )}
       </section>
@@ -124,6 +154,21 @@ export default async function TransitPage() {
         .srcnote { font-size: 11px; color: var(--faint); margin: 10px 0 0; text-align: right; }
         .div { border: none; border-top: 1px dashed var(--line); margin: 24px 0; }
         .lgrid.single { grid-template-columns: 1fr; }
+        .subheading { font-size: 13px; color: var(--coffee); font-weight: 700; letter-spacing: 1px; margin: 0 0 14px; }
+        .subheading.chspace { margin-top: 22px; }
+        .centerspill { display: flex; flex-wrap: wrap; gap: 8px; }
+        .pill {
+          font-size: 13px; padding: 6px 16px; border-radius: 20px;
+          background: var(--sage); color: #fff; font-weight: 700;
+        }
+        .chlist { display: grid; gap: 12px; }
+        .chcard {
+          background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px;
+        }
+        .chname { margin: 0 0 4px; font-size: 14px; font-weight: 700; color: var(--ink); }
+        .chcenters { margin: 0 0 8px; font-size: 12px; color: var(--gold); letter-spacing: 1px; }
+        .chdesc { margin: 0; font-size: 13.5px; line-height: 1.9; color: var(--ink); }
+        .channote { font-size: 12px; color: var(--faint); margin: 14px 0 0; line-height: 1.9; }
         @media (max-width: 720px) { .lgrid { grid-template-columns: 1fr; } }
         .note { font-size: 13px; color: var(--faint); text-align: center; margin-top: 24px; }
         @media (max-width: 720px) { .cards { grid-template-columns: 1fr; } }

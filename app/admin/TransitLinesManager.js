@@ -115,6 +115,52 @@ export default function TransitLinesManager({ adminKey }) {
                       onChange={(e) => upGate(g, 'essence', e.target.value)} />
                   </div>
 
+                  <p className="fieldlabel">所屬通道（接通的能量中心與通道分析）</p>
+                  {(gate.channels || []).map((ch, ci) => (
+                    <div key={ci} className="chrow">
+                      <div className="chrowhead">
+                        <span>通道 {ci + 1}</span>
+                        <button className="del" onClick={() => {
+                          const a = [...(gate.channels || [])].filter((_, k) => k !== ci);
+                          upGate(g, 'channels', a);
+                        }}>刪除</button>
+                      </div>
+                      <div className="two">
+                        <input type="number" placeholder="搭配閘門編號" value={ch.partner}
+                          onChange={(e) => {
+                            const a = [...gate.channels]; a[ci] = { ...ch, partner: Number(e.target.value) };
+                            upGate(g, 'channels', a);
+                          }} />
+                        <input placeholder="通道名稱" value={ch.name}
+                          onChange={(e) => {
+                            const a = [...gate.channels]; a[ci] = { ...ch, name: e.target.value };
+                            upGate(g, 'channels', a);
+                          }} />
+                      </div>
+                      <div className="two">
+                        <input placeholder="接通中心 A" value={ch.centers?.[0] || ''}
+                          onChange={(e) => {
+                            const a = [...gate.channels]; a[ci] = { ...ch, centers: [e.target.value, ch.centers?.[1] || ''] };
+                            upGate(g, 'channels', a);
+                          }} />
+                        <input placeholder="接通中心 B" value={ch.centers?.[1] || ''}
+                          onChange={(e) => {
+                            const a = [...gate.channels]; a[ci] = { ...ch, centers: [ch.centers?.[0] || '', e.target.value] };
+                            upGate(g, 'channels', a);
+                          }} />
+                      </div>
+                      <textarea rows={2} placeholder="通道說明" value={ch.desc}
+                        onChange={(e) => {
+                          const a = [...gate.channels]; a[ci] = { ...ch, desc: e.target.value };
+                          upGate(g, 'channels', a);
+                        }} />
+                    </div>
+                  ))}
+                  <button className="addch" onClick={() => upGate(g, 'channels',
+                    [...(gate.channels || []), { partner: '', centers: ['', ''], name: '', desc: '' }])}>
+                    + 新增通道
+                  </button>
+
                   <hr />
                   {['1','2','3','4','5','6'].map((l) => (
                     <div key={l} className="linerow">
@@ -123,23 +169,23 @@ export default function TransitLinesManager({ adminKey }) {
                         value={gate.lines[l].theme}
                         onChange={(e) => upLine(g, l, 'theme', e.target.value)} />
                       <div className="two">
-                        <input placeholder="擢升（上升）行星符號" value={gate.lines[l].exaltPlanet || ''}
+                        <input placeholder="上升行星符號" value={gate.lines[l].exaltPlanet || ''}
                           onChange={(e) => upLine(g, l, 'exaltPlanet', e.target.value)} />
-                        <input placeholder="衰落（下降）行星符號" value={gate.lines[l].detrimentPlanet || ''}
+                        <input placeholder="下降行星符號" value={gate.lines[l].detrimentPlanet || ''}
                           onChange={(e) => upLine(g, l, 'detrimentPlanet', e.target.value)} />
                       </div>
-                      <textarea rows={2} placeholder="擢升（上升）解讀"
+                      <textarea rows={2} placeholder="上升解讀"
                         value={gate.lines[l].exaltText || ''}
                         onChange={(e) => upLine(g, l, 'exaltText', e.target.value)} />
-                      <textarea rows={2} placeholder="衰落（下降）解讀"
+                      <textarea rows={2} placeholder="下降解讀"
                         value={gate.lines[l].detrimentText || ''}
                         onChange={(e) => upLine(g, l, 'detrimentText', e.target.value)} />
-                      <textarea rows={2} placeholder="當日力學機制（Joyce 的每日應用）"
-                        value={gate.lines[l].mechanism}
-                        onChange={(e) => upLine(g, l, 'mechanism', e.target.value)} />
-                      <textarea rows={2} placeholder="當日生活指引（Joyce 的每日應用）"
-                        value={gate.lines[l].guidance}
-                        onChange={(e) => upLine(g, l, 'guidance', e.target.value)} />
+                      <textarea rows={3} placeholder="流日氣象解碼"
+                        value={gate.lines[l].weather}
+                        onChange={(e) => upLine(g, l, 'weather', e.target.value)} />
+                      <textarea rows={3} placeholder="生活實踐指南"
+                        value={gate.lines[l].practice}
+                        onChange={(e) => upLine(g, l, 'practice', e.target.value)} />
                     </div>
                   ))}
                 </div>
@@ -196,6 +242,20 @@ export default function TransitLinesManager({ adminKey }) {
         .linerow { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px dashed var(--line); }
         .linerow:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .linerow b { font-size: 12px; color: var(--terracotta); }
+        .fieldlabel { font-size: 12px; color: var(--coffee); font-weight: 700; margin: 16px 0 4px; }
+        .chrow {
+          background: #fff; border: 1px solid var(--line); border-radius: 8px;
+          padding: 10px 12px 12px; margin-bottom: 8px;
+        }
+        .chrowhead { display: flex; align-items: center; justify-content: space-between; }
+        .chrowhead span { font-size: 12px; color: var(--faint); }
+        .chrowhead .del {
+          font-size: 12px; color: var(--terracotta); background: none; border: none; cursor: pointer;
+        }
+        .addch {
+          font-size: 13px; padding: 8px 16px; border-radius: 7px; cursor: pointer;
+          border: 1px dashed var(--coffee); background: none; color: var(--coffee); margin-top: 4px;
+        }
         @media (max-width: 720px) {
           .ovrow { grid-template-columns: 1fr; }
           .two { grid-template-columns: 1fr; }
