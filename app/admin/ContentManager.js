@@ -22,6 +22,9 @@ export default function ContentManager({ adminKey }) {
           booking: { heading:'預約', lede:'', embedUrl:'', note:'', ...(x.booking||{}) },
           homepage: { order:['ambience','services','chart','testimonials','cases','posts'], ...(x.homepage||{}) },
           postsSection: { heading:'最近的文字', show:true, ...(x.postsSection||{}) },
+          chartReport: { enabled:true, price:99, heading:'', intro:'', bullets:[],
+                         ctaText:'', ctaUrl:'', sampleEnabled:true, sampleLabel:'',
+                         sampleShowBirth:false, sampleBirthLine:'', sampleText:'', ...(x.chartReport||{}) },
           contact: { email:'', line:'', social:[], ...(x.contact||{}) },
         });
       });
@@ -59,6 +62,7 @@ export default function ContentManager({ adminKey }) {
     ['about', '關於我'],
     ['services', '服務項目'],
     ['layout', '首頁排版'],
+    ['report', '解圖報告'],
     ['faq', '常見問題'],
     ['booking', '預約設定'],
     ['contact', '聯絡與社群'],
@@ -344,6 +348,66 @@ export default function ContentManager({ adminKey }) {
               <option value="1">顯示</option><option value="0">隱藏</option>
             </select>
           </L>
+        </div>
+      )}
+
+      {sec === 'report' && (
+        <div className="pane">
+          <p className="sub">付費解圖報告（PDF）。金流（綠界 ECPay）與 AI（Anthropic）金鑰須在 Vercel 環境變數設定，這裡只負責文案與價格。</p>
+          <L t="是否開放購買">
+            <select value={c.chartReport.enabled !== false ? '1' : '0'}
+              onChange={(e) => up(['chartReport','enabled'], e.target.value === '1')}>
+              <option value="1">開放</option><option value="0">暫停（隱藏購買按鈕）</option>
+            </select>
+          </L>
+          <L t="價格（新台幣，可隨時調整）">
+            <input type="number" min="1" value={c.chartReport.price}
+              onChange={(e) => up(['chartReport','price'], Number(e.target.value) || 0)} />
+          </L>
+          <L t="區塊標題"><input value={c.chartReport.heading}
+            onChange={(e) => up(['chartReport','heading'], e.target.value)} /></L>
+          <L t="說明文字"><textarea rows={2} value={c.chartReport.intro}
+            onChange={(e) => up(['chartReport','intro'], e.target.value)} /></L>
+
+          <p className="fieldlabel">重點列表（每行一項）</p>
+          <textarea rows={4} value={(c.chartReport.bullets || []).join('\n')}
+            onChange={(e) => up(['chartReport','bullets'], e.target.value.split('\n').filter(Boolean))} />
+
+          <div className="two">
+            <L t="預約 CTA 文字"><input value={c.chartReport.ctaText}
+              onChange={(e) => up(['chartReport','ctaText'], e.target.value)} /></L>
+            <L t="預約 CTA 連結"><input value={c.chartReport.ctaUrl}
+              onChange={(e) => up(['chartReport','ctaUrl'], e.target.value)} /></L>
+          </div>
+
+          <hr />
+          <p className="fieldlabel">範例報告（給訪客預覽用，非即時生成，可隨時修改文字）</p>
+          <L t="是否顯示「查看範例」">
+            <select value={c.chartReport.sampleEnabled !== false ? '1' : '0'}
+              onChange={(e) => up(['chartReport','sampleEnabled'], e.target.value === '1')}>
+              <option value="1">顯示</option><option value="0">隱藏</option>
+            </select>
+          </L>
+          <L t="範例標示文字（例如：以 Joyce 本人的人類圖為例）">
+            <input value={c.chartReport.sampleLabel}
+              onChange={(e) => up(['chartReport','sampleLabel'], e.target.value)} />
+          </L>
+          <div className="two">
+            <L t="範例 PDF 是否顯示出生資料">
+              <select value={c.chartReport.sampleShowBirth ? '1' : '0'}
+                onChange={(e) => up(['chartReport','sampleShowBirth'], e.target.value === '1')}>
+                <option value="0">不顯示</option><option value="1">顯示</option>
+              </select>
+            </L>
+            <input placeholder="若顯示，填入想公開的出生資訊文字" value={c.chartReport.sampleBirthLine}
+              onChange={(e) => up(['chartReport','sampleBirthLine'], e.target.value)} />
+          </div>
+          <p className="fieldlabel">範例報告全文（格式須為「行星｜代表意義」換行接內文，段落間空一行）</p>
+          <textarea rows={18} value={c.chartReport.sampleText}
+            onChange={(e) => up(['chartReport','sampleText'], e.target.value)} />
+          <p className="sub">
+            <a href="/api/report/sample-pdf" target="_blank" rel="noopener">預覽目前的範例 PDF →</a>
+          </p>
         </div>
       )}
 
