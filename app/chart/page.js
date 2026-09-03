@@ -1,4 +1,5 @@
 import { natalChart } from '../../lib/chart.js';
+import { getContent } from '../../lib/store.js';
 import ChartView from './ChartView';
 import { headers } from 'next/headers';
 import { logUsage, visitorId } from '../../lib/usage.js';
@@ -6,7 +7,7 @@ import { logUsage, visitorId } from '../../lib/usage.js';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: '你的人類圖 — 排盤結果' };
 
-export default function ChartPage({ searchParams }) {
+export default async function ChartPage({ searchParams }) {
   const p = searchParams || {};
   const year = +p.y, month = +p.m, day = +p.d, hour = +p.h, minute = +p.mi;
   const tz = String(p.tz || 'Asia/Taipei');
@@ -27,7 +28,10 @@ export default function ChartPage({ searchParams }) {
     );
   }
 
-  const { info, svg, svgFull } = natalChart({ year, month, day, hour, minute, tz, name });
+  const [{ info, svg, svgFull }, c] = await Promise.all([
+    Promise.resolve(natalChart({ year, month, day, hour, minute, tz, name })),
+    getContent(),
+  ]);
 
   logUsage({
     kind: 'natal', name, city, uid: visitorId(headers()),
@@ -49,6 +53,8 @@ export default function ChartPage({ searchParams }) {
       label={name || '我的人類圖'}
       birthLine={birthLine}
       pngHref={`/api/png?y=${year}&m=${month}&d=${day}&h=${hour}&mi=${minute}&tz=${encodeURIComponent(tz)}&name=${encodeURIComponent(name)}`}
+      birth={{ year, month, day, hour, minute, tz, city, name }}
+      reportConfig={c.chartReport || {}}
     />
   );
 }

@@ -29,7 +29,7 @@ export default async function ServiceDetail({ params }) {
         <h1>{s.name}</h1>
         <div className="tags">
           <span className="dur">{s.duration}</span>
-          <span className="price">{s.price}</span>
+          <span className="price">{s.isAutoReport ? `NT$ ${c.chartReport?.price ?? 99}` : s.price}</span>
           <span className="mode">線上／實體皆可</span>
           {s.available === false && <span className="unavail">暫不開放預約</span>}
         </div>
@@ -69,9 +69,20 @@ export default async function ServiceDetail({ params }) {
         </section>
       )}
 
-      {/* 預約：在服務介紹之後 */}
+      {/* 預約：在服務介紹之後（自動報告項目改為導向免費排盤） */}
       <section id="booking" className="booking">
-        {s.available === false ? (
+        {s.isAutoReport ? (
+          <>
+            <h2 className="bh">立即開始</h2>
+            <p className="bsub">先免費生成你的人類圖，接著就能在結果頁解鎖這份報告。</p>
+            <a className="cbtn primary" href="/#chart">前往免費排盤 →</a>
+            {c.chartReport?.sampleEnabled !== false && (
+              <a className="cbtn sample-link" href="/api/report/sample-pdf" target="_blank" rel="noopener">
+                先看看範例 PDF
+              </a>
+            )}
+          </>
+        ) : s.available === false ? (
           <>
             <h2 className="bh">目前暫不開放預約</h2>
             <p className="bsub">歡迎透過以下方式直接與我聯繫，我會盡快回覆你。</p>
@@ -185,6 +196,12 @@ export default async function ServiceDetail({ params }) {
         .cbtn:hover { border-color: var(--coffee); }
         .cbtn.mail { color: var(--coffee); }
         .cbtn.line { color: #06C755; }
+        .cbtn.primary {
+          background: var(--terracotta); color: #fff; border: none;
+          max-width: 320px; margin: 0 auto 12px;
+        }
+        .cbtn.primary:hover { background: #a85c3f; }
+        .cbtn.sample-link { max-width: 320px; margin: 0 auto; }
 
         .others { margin-top: 56px; }
         .ogrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }

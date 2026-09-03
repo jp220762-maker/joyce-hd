@@ -104,12 +104,23 @@ export async function POST(req) {
     const b = order.birth;
     const birthLine = `${b.year}/${pad(b.month)}/${pad(b.day)} ${pad(b.hour)}:${pad(b.minute)}　${b.city || ''}`;
 
+    let chartImageBytes = null;
+    try {
+      const { natalChart } = await import('../../../../lib/chart.js');
+      const { renderChartPng } = await import('../../../../lib/chartImage.js');
+      const { svgFull } = natalChart({ ...b });
+      chartImageBytes = await renderChartPng(svgFull);
+    } catch (e) {
+      console.error('人體圖產生失敗，PDF 將不含圖表', e);
+    }
+
     const pdfBuffer = await buildReportPdf({
       title: `${b.name || '你'}的專屬解圖報告`,
       subtitle: `${c.site?.name || 'J頁有光'}｜行星代表意義解圖法`,
       birthLine,
       sections,
       logoBytes,
+      chartImageBytes,
       footerNote: `© ${new Date().getFullYear()} ${c.site?.name || 'J頁有光'}`,
     });
 
