@@ -17,6 +17,20 @@ export default async function TransitPage() {
   const gateData = tl.gates?.[String(sun.gate)];
   const lineData = gateData?.lines?.[String(sun.line)];
 
+  // 今天所有「完整接通」的通道（不只太陽所在閘門，取自排盤引擎已計算好的 info.channels）
+  const todaysChannels = (info.channels || []).map(([a, b]) => {
+    const ga = tl.gates?.[String(a)];
+    const gb = tl.gates?.[String(b)];
+    const found = ga?.channels?.find((c) => c.partner === b) || gb?.channels?.find((c) => c.partner === a);
+    return {
+      gates: [a, b],
+      name: found?.name || '',
+      centers: found?.centers || [ga?.center, gb?.center].filter(Boolean),
+      desc: found?.desc || '',
+    };
+  });
+  const todaysCenters = [...new Set(todaysChannels.flatMap((c) => c.centers))];
+
   return (
     <main>
       <header className="hero">
@@ -74,32 +88,32 @@ export default async function TransitPage() {
                 <p>{lineData.practice}</p>
               </div>
             </div>
+          </div>
+        )}
 
-            {(gateData.channels?.length || 0) > 0 && (
-              <>
-                <hr className="div" />
-                <p className="subheading">接通的能量中心</p>
-                <div className="centerspill">
-                  {[...new Set(gateData.channels.flatMap((ch) => ch.centers))].map((c) => (
-                    <span key={c} className="pill">{c}</span>
-                  ))}
-                </div>
+        {todaysChannels.length > 0 && (
+          <div className="lineread">
+            <h3>今日完整接通的通道</h3>
+            <p className="gatemeta">今天啟動的所有閘門中，剛好兩兩配對、完整接通的通道如下（不限太陽所在閘門）。</p>
 
-                <p className="subheading chspace">通道分析</p>
-                <div className="chlist">
-                  {gateData.channels.map((ch, i) => (
-                    <div key={i} className="chcard">
-                      <p className="chname">
-                        {sun.gate}—{ch.partner}｜{ch.name}
-                      </p>
-                      <p className="chcenters">{ch.centers[0]} ↔ {ch.centers[1]}</p>
-                      <p className="chdesc">{ch.desc}</p>
-                    </div>
-                  ))}
+            <p className="subheading">接通的能量中心</p>
+            <div className="centerspill">
+              {todaysCenters.map((c) => (
+                <span key={c} className="pill">{c}</span>
+              ))}
+            </div>
+
+            <p className="subheading chspace">通道分析</p>
+            <div className="chlist">
+              {todaysChannels.map((ch, i) => (
+                <div key={i} className="chcard">
+                  <p className="chname">{ch.gates[0]}—{ch.gates[1]}{ch.name ? `｜${ch.name}` : ''}</p>
+                  {ch.centers.length === 2 && <p className="chcenters">{ch.centers[0]} ↔ {ch.centers[1]}</p>}
+                  {ch.desc && <p className="chdesc">{ch.desc}</p>}
                 </div>
-                <p className="channote">此為第 {sun.gate} 號閘門固定所屬的通道與中心，若你的本命圖恰好擁有搭配的另一閘門，今天便可能暫時體驗到這條通道接通的感受。</p>
-              </>
-            )}
+              ))}
+            </div>
+            <p className="channote">這些通道是今天所有啟動閘門兩兩配對後、剛好完整接通的組合；若你的本命圖恰好也啟動了同一組閘門，今天可能會特別有感覺。</p>
           </div>
         )}
       </section>
