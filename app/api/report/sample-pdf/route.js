@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { getContent, getLogoBytes } from '../../../../lib/store.js';
 import { splitIntoSections } from '../../../../lib/reportSections.js';
 import { buildReportPdf } from '../../../../lib/pdfReport.js';
@@ -12,16 +14,13 @@ export async function GET() {
   const sections = splitIntoSections(cfg.sampleText || '');
   const logoBytes = await getLogoBytes(c.site?.logoUrl);
 
+  // 範例人體圖為固定靜態檔案（避免每次請求都重新計算命盤與轉圖）
   let chartImageBytes = null;
-  if (cfg.sampleBirth) {
-    try {
-      const { natalChart } = await import('../../../../lib/chart.js');
-      const { renderChartPng } = await import('../../../../lib/chartImage.js');
-      const { svgFull } = natalChart({ ...cfg.sampleBirth });
-      chartImageBytes = await renderChartPng(svgFull);
-    } catch (e) {
-      console.error('範例人體圖產生失敗', e);
-    }
+  try {
+    const p = path.join(process.cwd(), 'public', 'images', 'sample-chart.jpg');
+    if (fs.existsSync(p)) chartImageBytes = fs.readFileSync(p);
+  } catch (e) {
+    console.error('讀取範例人體圖失敗', e);
   }
 
   const pdfBuffer = await buildReportPdf({
