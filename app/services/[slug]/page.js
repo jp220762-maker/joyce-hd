@@ -29,7 +29,7 @@ export default async function ServiceDetail({ params }) {
         <h1>{s.name}</h1>
         <div className="tags">
           <span className="dur">{s.duration}</span>
-          <span className="price">{s.isAutoReport ? `NT$ ${c.chartReport?.price ?? 99}` : s.price}</span>
+          <span className="price">{(s.isAutoReport || s.slug === 'planet-report') ? `NT$ ${c.chartReport?.price ?? 99}` : s.price}</span>
           <span className="mode">線上／實體皆可</span>
           {s.available === false && <span className="unavail">暫不開放預約</span>}
         </div>
@@ -71,7 +71,7 @@ export default async function ServiceDetail({ params }) {
 
       {/* 預約：在服務介紹之後（自動報告項目改為導向免費排盤） */}
       <section id="booking" className="booking">
-        {s.isAutoReport ? (
+        {(s.isAutoReport || s.slug === 'planet-report') ? (
           <>
             <h2 className="bh">立即開始</h2>
             <p className="bsub">先免費生成你的人類圖，接著就能在結果頁解鎖這份報告。</p>
