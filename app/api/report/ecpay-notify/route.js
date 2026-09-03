@@ -4,6 +4,7 @@ import { buildReportMessages } from '../../../../lib/reportPrompt.js';
 import { buildReportPdf } from '../../../../lib/pdfReport.js';
 import { splitIntoSections } from '../../../../lib/reportSections.js';
 import { DEFAULT_TRANSIT_LINES } from '../../../../lib/transitLines.js';
+import { issueInvoice, invoiceConfigured } from '../../../../lib/ecpayInvoice.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -92,6 +93,26 @@ export async function POST(req) {
   }
 
   await updateReportOrder(orderId, { status: 'generating', paidAt: new Date().toISOString() });
+
+  // 開立電子發票（與報告生成互相獨立：發票失敗不影響報告，報告失敗不影響已開立的發票）
+  if (invoiceConfigured()) {
+    try {
+      const c0 = await getContent();
+      const inv = await issueInvoice({
+        relateNumber: orderId,
+        amount: order.price,
+        itemName: `${c0.chartReport?.heading || '人類圖解圖報告'}`,
+        buyerEmail: order.email,
+      });
+      await updateReportOrder(orderId, {
+        invoiceNo: inv.invoiceNo,
+        invoiceDate: inv.invoiceDate,
+      });
+    } catch (e) {
+      console.error('電子發票開立失敗', e);
+      await updateReportOrder(orderId, { invoiceError: String(e.message || e) });
+    }
+  }
 
   try {
     const text = await generateReportText({ P: order.P, D: order.D, summary: order.summary, birth: order.birth });
