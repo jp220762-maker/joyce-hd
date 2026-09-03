@@ -272,9 +272,21 @@ export default function ContentManager({ adminKey }) {
             <div key={i} className="row">
               <div className="rowhead">
                 <b>項目 {i + 1}</b>
-                <button className="del" onClick={() => {
-                  if (confirm(`刪除「${s.name}」？`)) up(['services','items'], (c.services.items || []).filter((_, k) => k !== i));
-                }}>刪除</button>
+                <div className="rowops">
+                  <button className="mv" disabled={i === 0} onClick={() => {
+                    const a = [...(c.services.items || [])];
+                    [a[i - 1], a[i]] = [a[i], a[i - 1]];
+                    up(['services','items'], a);
+                  }}>↑</button>
+                  <button className="mv" disabled={i === (c.services.items || []).length - 1} onClick={() => {
+                    const a = [...(c.services.items || [])];
+                    [a[i], a[i + 1]] = [a[i + 1], a[i]];
+                    up(['services','items'], a);
+                  }}>↓</button>
+                  <button className="del" onClick={() => {
+                    if (confirm(`刪除「${s.name}」？`)) up(['services','items'], (c.services.items || []).filter((_, k) => k !== i));
+                  }}>刪除</button>
+                </div>
               </div>
               <input placeholder="服務名稱" value={s.name}
                 onChange={(e) => { const a=[...(c.services.items || [])]; a[i]={...s,name:e.target.value}; up(['services','items'],a); }} />
@@ -497,6 +509,12 @@ export default function ContentManager({ adminKey }) {
                padding: 16px; margin-bottom: 12px; background: #fff; }
         .rowhead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .rowhead b { font-size: 13px; color: var(--faint); letter-spacing: 1px; }
+        .rowops { display: flex; align-items: center; gap: 6px; }
+        .rowops .mv {
+          font-size: 13px; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+          border: 1px solid var(--line); background: #fff; color: var(--ink);
+        }
+        .rowops .mv:disabled { opacity: .3; cursor: default; }
         .ordrow {
           display: flex; align-items: center; justify-content: space-between;
           background: var(--paper); border: 1px solid var(--line);
