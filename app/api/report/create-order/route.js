@@ -95,6 +95,6 @@ export async function POST(req) {
     return new NextResponse(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: '建立訂單時發生問題（除錯中）：' + String(e?.message || e) }, { status: 500 });
+    return NextResponse.json({ error: '建立訂單時發生問題，請稍後再試。' }, { status: 500 });
   }
 }
