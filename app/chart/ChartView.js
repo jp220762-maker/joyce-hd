@@ -171,39 +171,44 @@ export default function ChartView({ svg, svgFull, summary, label, birthLine, png
 function SimpleRead({ summary, emptyCenters }) {
   return (
     <div className="simple-read">
-      <p className="sr-h">你的簡單解圖</p>
+      <p className="sr-title">你的簡單解圖</p>
 
       <div className="sr-info">
         <div className="sr-item">
-          <div className="sr-row"><span>類型</span><b>{summary.type}</b></div>
+          <p className="sr-label">類型</p>
+          <p className="sr-value">{summary.type}</p>
           <p className="sr-desc">{TYPE_DESC[summary.type]}</p>
         </div>
         <div className="sr-item">
-          <div className="sr-row"><span>人生角色</span><b>{summary.profile}</b></div>
+          <p className="sr-label">人生角色</p>
+          <p className="sr-value">{summary.profile}</p>
           <p className="sr-desc">{PROFILE_DESC[summary.profile]}</p>
         </div>
         <div className="sr-item">
-          <div className="sr-row"><span>定義</span><b>{summary.definition}</b></div>
+          <p className="sr-label">定義</p>
+          <p className="sr-value">{summary.definition}</p>
           <p className="sr-desc">{DEFINITION_DESC[summary.definition]}</p>
         </div>
         <div className="sr-item">
-          <div className="sr-row"><span>內在權威</span><b>{summary.authority}</b></div>
+          <p className="sr-label">內在權威</p>
+          <p className="sr-value">{summary.authority}</p>
           <p className="sr-desc">{AUTHORITY_DESC[summary.authority]}</p>
         </div>
         <div className="sr-item">
-          <div className="sr-row"><span>輪迴交叉</span><b>{summary.cross}</b></div>
+          <p className="sr-label">輪迴交叉</p>
+          <p className="sr-value">{summary.cross}</p>
           {summary.crossExtra?.desc && <p className="sr-desc">{summary.crossExtra.desc}</p>}
         </div>
       </div>
 
       {emptyCenters.length > 0 && (
         <>
-          <p className="sr-sub">最容易受苦的地方 —— 你的空白中心</p>
+          <p className="sr-label sr-sub">最容易受苦的地方 —— 你的空白中心</p>
           <div className="sr-centers">
             {emptyCenters.map((c) => (
               <div key={c} className="sr-center">
-                <p className="sr-cname">{CENTER_NAMES[c]}</p>
-                <p className="sr-ctext">{CENTER_UNDEFINED_SUFFERING[c]}</p>
+                <p className="sr-label">{CENTER_NAMES[c]}</p>
+                <p className="sr-desc">{CENTER_UNDEFINED_SUFFERING[c]}</p>
               </div>
             ))}
           </div>
@@ -216,22 +221,31 @@ function SimpleRead({ summary, emptyCenters }) {
           background: var(--paper); border: 1px solid var(--line);
           text-align: left;
         }
-        .sr-h { font-size: 16px; font-weight: 700; color: var(--coffee); margin: 0 0 14px; }
-        .sr-info {
-          display: flex; flex-direction: column; gap: 14px;
-          margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px dashed var(--line);
+        /* 標題層級：主標題／欄位標籤／子標題／中心名稱，統一橘色、統一字級 */
+        .sr-title, .sr-label {
+          font-size: 14px; font-weight: 700; color: var(--terracotta);
+          margin: 0 0 4px;
         }
-        .sr-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 5px; }
-        .sr-row span { font-size: 13px; color: var(--faint); white-space: nowrap; }
-        .sr-row b { font-size: 18px; color: var(--coffee); font-weight: 700; }
-        .sr-item .sr-desc { font-size: 13px; color: var(--ink); line-height: 1.75; margin: 0; }
-        .sr-sub { font-size: 13px; font-weight: 700; color: var(--terracotta); margin: 0 0 12px; }
+        .sr-title { margin-bottom: 16px; }
+        /* 數值層級：實際結果，統一深色、統一字級，獨立一行 */
+        .sr-value {
+          font-size: 17px; font-weight: 700; color: var(--ink);
+          margin: 0 0 6px;
+        }
+        /* 內文層級：說明文字，統一字級 */
+        .sr-desc {
+          font-size: 13.5px; color: var(--ink); line-height: 1.75; margin: 0;
+        }
+        .sr-info {
+          display: flex; flex-direction: column; gap: 16px;
+          margin-bottom: 20px; padding-bottom: 18px; border-bottom: 1px dashed var(--line);
+        }
+        .sr-sub { margin: 0 0 12px; }
         .sr-centers { display: flex; flex-direction: column; gap: 10px; }
         .sr-center {
           background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 12px 14px;
         }
-        .sr-cname { font-size: 12.5px; font-weight: 700; color: var(--sage); margin: 0 0 5px; }
-        .sr-ctext { font-size: 13px; color: var(--ink); line-height: 1.8; margin: 0; }
+        .sr-center .sr-label { margin-bottom: 5px; }
       `}</style>
     </div>
   );
