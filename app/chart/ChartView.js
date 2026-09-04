@@ -192,16 +192,7 @@ function SimpleRead({ summary, emptyCenters }) {
         </div>
         <div className="sr-item">
           <div className="sr-row"><span>輪迴交叉</span><b>{summary.cross}</b></div>
-          {(summary.crossPoints || []).length > 0 && (
-            <div className="sr-crosspoints">
-              {summary.crossPoints.map((cp, i) => (
-                <p key={i} className="sr-desc sr-cp">
-                  <span className="sr-cplabel">{cp.label} {cp.gate}.{cp.line}</span>
-                  {cp.theme && <>　爻辭：{cp.theme}</>}
-                </p>
-              ))}
-            </div>
-          )}
+          {summary.crossExtra?.desc && <p className="sr-desc">{summary.crossExtra.desc}</p>}
         </div>
       </div>
 
@@ -230,13 +221,10 @@ function SimpleRead({ summary, emptyCenters }) {
           display: flex; flex-direction: column; gap: 14px;
           margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px dashed var(--line);
         }
-        .sr-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
-        .sr-row span { font-size: 12.5px; color: var(--faint); }
-        .sr-row b { font-size: 15px; color: var(--ink); font-weight: 700; text-align: right; }
+        .sr-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 5px; }
+        .sr-row span { font-size: 13px; color: var(--faint); white-space: nowrap; }
+        .sr-row b { font-size: 18px; color: var(--coffee); font-weight: 700; }
         .sr-item .sr-desc { font-size: 13px; color: var(--ink); line-height: 1.75; margin: 0; }
-        .sr-crosspoints { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
-        .sr-cp { line-height: 1.7; }
-        .sr-cplabel { color: var(--gold); font-weight: 700; margin-right: 2px; }
         .sr-sub { font-size: 13px; font-weight: 700; color: var(--terracotta); margin: 0 0 12px; }
         .sr-centers { display: flex; flex-direction: column; gap: 10px; }
         .sr-center {

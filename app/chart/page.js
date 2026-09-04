@@ -1,6 +1,5 @@
 import { natalChart } from '../../lib/chart.js';
 import { getContent } from '../../lib/store.js';
-import { DEFAULT_TRANSIT_LINES } from '../../lib/transitLines.js';
 import ChartView from './ChartView';
 import { headers } from 'next/headers';
 import { logUsage, visitorId } from '../../lib/usage.js';
@@ -42,19 +41,6 @@ export default async function ChartPage({ searchParams }) {
   const pad = (n) => String(n).padStart(2, '0');
   const birthLine = `${year}/${pad(month)}/${pad(day)} ${pad(hour)}:${pad(minute)}　${city}`;
 
-  // 輪迴交叉由 4 個閘門爻位組成：個性太陽/地球、設計太陽/地球，
-  // 直接引用既有的 384 爻辭資料庫（來源：《區分的科學》），不另外生成新內容
-  const crossPoints = [
-    { label: '個性太陽', act: P['太陽'] },
-    { label: '個性地球', act: P['地球'] },
-    { label: '設計太陽', act: D['太陽'] },
-    { label: '設計地球', act: D['地球'] },
-  ].map(({ label, act }) => {
-    const gateData = DEFAULT_TRANSIT_LINES.gates?.[String(act.gate)];
-    const lineData = gateData?.lines?.[String(act.line)];
-    return { label, gate: act.gate, line: act.line, theme: lineData?.theme || '' };
-  });
-
   return (
     <ChartView
       svg={svg}
@@ -62,7 +48,7 @@ export default async function ChartPage({ searchParams }) {
       summary={{
         type: info.type, profile: info.profile, definition: info.definition,
         authority: info.authority, strategy: info.strategy,
-        notSelf: info.notSelf, cross: info.cross, crossPoints,
+        notSelf: info.notSelf, cross: info.cross, crossExtra: info.crossExtra,
         centers: info.centers,
       }}
       label={name || '我的人類圖'}
