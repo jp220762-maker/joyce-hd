@@ -190,9 +190,18 @@ function SimpleRead({ summary, emptyCenters }) {
           <div className="sr-row"><span>內在權威</span><b>{summary.authority}</b></div>
           <p className="sr-desc">{AUTHORITY_DESC[summary.authority]}</p>
         </div>
-        <div className="sr-item sr-cross">
+        <div className="sr-item">
           <div className="sr-row"><span>輪迴交叉</span><b>{summary.cross}</b></div>
-          {summary.crossSign && <p className="sr-desc">對應星座：{summary.crossSign}</p>}
+          {(summary.crossPoints || []).length > 0 && (
+            <div className="sr-crosspoints">
+              {summary.crossPoints.map((cp, i) => (
+                <p key={i} className="sr-desc sr-cp">
+                  <span className="sr-cplabel">{cp.label} {cp.gate}.{cp.line}</span>
+                  {cp.theme && <>　爻辭：{cp.theme}</>}
+                </p>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -218,14 +227,16 @@ function SimpleRead({ summary, emptyCenters }) {
         }
         .sr-h { font-size: 16px; font-weight: 700; color: var(--coffee); margin: 0 0 14px; }
         .sr-info {
-          display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px;
+          display: flex; flex-direction: column; gap: 14px;
           margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px dashed var(--line);
         }
-        .sr-cross { grid-column: 1 / -1; }
-        .sr-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+        .sr-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
         .sr-row span { font-size: 12.5px; color: var(--faint); }
-        .sr-row b { font-size: 14px; color: var(--ink); font-weight: 700; text-align: right; }
-        .sr-item .sr-desc { font-size: 12px; color: var(--faint); line-height: 1.6; margin: 0; }
+        .sr-row b { font-size: 15px; color: var(--ink); font-weight: 700; text-align: right; }
+        .sr-item .sr-desc { font-size: 13px; color: var(--ink); line-height: 1.75; margin: 0; }
+        .sr-crosspoints { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+        .sr-cp { line-height: 1.7; }
+        .sr-cplabel { color: var(--gold); font-weight: 700; margin-right: 2px; }
         .sr-sub { font-size: 13px; font-weight: 700; color: var(--terracotta); margin: 0 0 12px; }
         .sr-centers { display: flex; flex-direction: column; gap: 10px; }
         .sr-center {
@@ -233,9 +244,6 @@ function SimpleRead({ summary, emptyCenters }) {
         }
         .sr-cname { font-size: 12.5px; font-weight: 700; color: var(--sage); margin: 0 0 5px; }
         .sr-ctext { font-size: 13px; color: var(--ink); line-height: 1.8; margin: 0; }
-        @media (max-width: 480px) {
-          .sr-info { grid-template-columns: 1fr; }
-        }
       `}</style>
     </div>
   );
