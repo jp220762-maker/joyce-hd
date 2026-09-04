@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { natalChart } from '../../../../lib/chart.js';
 import { getContent, createReportOrder } from '../../../../lib/store.js';
+import { buildCheckoutForm } from '../../../../lib/ecpayCheckout.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -84,26 +85,22 @@ export async function POST(req) {
       },
     });
 
-    const ECPayPayment = (await import('ecpay_aio_nodejs')).default;
-    const options = {
-      OperationMode: process.env.ECPAY_MODE === 'production' ? 'Production' : 'Test',
-      MercProfile: { MerchantID: merchantId, HashKey: hashKey, HashIV: hashIv },
-      IgnorePayment: [],
-      IsProjectContractor: false,
-    };
-    const ecpay = new ECPayPayment(options);
-
     const base_param = {
       MerchantTradeNo: orderId,
       MerchantTradeDate: merchantTradeDate,
       TotalAmount: String(price),
       TradeDesc: '人類圖專屬解圖報告',
-      ItemName: `人類圖解圖報告（${name || '個人'}）`,
+      ItemName: `人類圖解圖報告(${name || '個人'})`,
       ReturnURL: `${origin}/api/report/ecpay-notify`,
       ClientBackURL: `${origin}/report/${orderId}`,
+      MerchantID: merchantId,
     };
 
-    const html = ecpay.payment_client.aio_check_out_all(base_param, {});
+    const actionUrl = process.env.ECPAY_MODE === 'production'
+      ? 'https://payment.ecpay.com.tw/Cashier/AioCheckOut/V5'
+      : 'https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5';
+
+    const html = buildCheckoutForm({ params: base_param, hashKey, hashIv, actionUrl });
     return new NextResponse(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
   } catch (e) {
     console.error(e);

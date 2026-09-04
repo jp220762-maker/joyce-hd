@@ -5,16 +5,17 @@ import { buildReportPdf } from '../../../../lib/pdfReport.js';
 import { splitIntoSections } from '../../../../lib/reportSections.js';
 import { DEFAULT_TRANSIT_LINES } from '../../../../lib/transitLines.js';
 import { issueInvoice, invoiceConfigured } from '../../../../lib/ecpayInvoice.js';
+import { genCheckMacValue } from '../../../../lib/ecpayCheckout.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-function verifyMac(paramsObj, ecpay) {
+function verifyMac(paramsObj, hashKey, hashIv) {
   const clone = { ...paramsObj };
   const mac = clone.CheckMacValue;
   delete clone.CheckMacValue;
-  const computed = ecpay.payment_client.helper.gen_chk_mac_value(clone);
+  const computed = genCheckMacValue(clone, hashKey, hashIv);
   return computed === mac;
 }
 
@@ -62,15 +63,7 @@ export async function POST(req) {
     return new NextResponse('0|CONFIG', { status: 200 });
   }
 
-  const ECPayPayment = (await import('ecpay_aio_nodejs')).default;
-  const ecpay = new ECPayPayment({
-    OperationMode: process.env.ECPAY_MODE === 'production' ? 'Production' : 'Test',
-    MercProfile: { MerchantID: merchantId, HashKey: hashKey, HashIV: hashIv },
-    IgnorePayment: [],
-    IsProjectContractor: false,
-  });
-
-  if (!verifyMac(params, ecpay)) {
+  if (!verifyMac(params, hashKey, hashIv)) {
     console.error('ECPay CheckMacValue 驗證失敗', params);
     return new NextResponse('0|CheckMacValue Error', { status: 200 });
   }
