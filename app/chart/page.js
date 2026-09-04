@@ -48,7 +48,8 @@ export default async function ChartPage({ searchParams }) {
       summary={{
         type: info.type, profile: info.profile, definition: info.definition,
         authority: info.authority, strategy: info.strategy,
-        notSelf: info.notSelf, cross: info.cross, centers: info.centers,
+        notSelf: info.notSelf, cross: info.cross, crossSign: info.crossSign,
+        centers: info.centers,
       }}
       label={name || '我的人類圖'}
       birthLine={birthLine}

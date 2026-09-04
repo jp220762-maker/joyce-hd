@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { ALL_CENTERS, CENTER_NAMES, CENTER_UNDEFINED_SUFFERING } from '../../lib/centerMeanings.js';
+import { ALL_CENTERS, CENTER_NAMES, CENTER_UNDEFINED_SUFFERING,
+         TYPE_DESC, PROFILE_DESC, DEFINITION_DESC, AUTHORITY_DESC } from '../../lib/centerMeanings.js';
 
 export default function ChartView({ svg, svgFull, summary, label, birthLine, pngHref, birth, reportConfig }) {
   const [isMobile, setIsMobile] = useState(false);
@@ -173,11 +174,26 @@ function SimpleRead({ summary, emptyCenters }) {
       <p className="sr-h">你的簡單解圖</p>
 
       <div className="sr-info">
-        <div><span>類型</span><b>{summary.type}</b></div>
-        <div><span>人生角色</span><b>{summary.profile}</b></div>
-        <div><span>定義</span><b>{summary.definition}</b></div>
-        <div><span>內在權威</span><b>{summary.authority}</b></div>
-        <div className="sr-cross"><span>輪迴交叉</span><b>{summary.cross}</b></div>
+        <div className="sr-item">
+          <div className="sr-row"><span>類型</span><b>{summary.type}</b></div>
+          <p className="sr-desc">{TYPE_DESC[summary.type]}</p>
+        </div>
+        <div className="sr-item">
+          <div className="sr-row"><span>人生角色</span><b>{summary.profile}</b></div>
+          <p className="sr-desc">{PROFILE_DESC[summary.profile]}</p>
+        </div>
+        <div className="sr-item">
+          <div className="sr-row"><span>定義</span><b>{summary.definition}</b></div>
+          <p className="sr-desc">{DEFINITION_DESC[summary.definition]}</p>
+        </div>
+        <div className="sr-item">
+          <div className="sr-row"><span>內在權威</span><b>{summary.authority}</b></div>
+          <p className="sr-desc">{AUTHORITY_DESC[summary.authority]}</p>
+        </div>
+        <div className="sr-item sr-cross">
+          <div className="sr-row"><span>輪迴交叉</span><b>{summary.cross}</b></div>
+          {summary.crossSign && <p className="sr-desc">對應星座：{summary.crossSign}</p>}
+        </div>
       </div>
 
       {emptyCenters.length > 0 && (
@@ -202,14 +218,14 @@ function SimpleRead({ summary, emptyCenters }) {
         }
         .sr-h { font-size: 16px; font-weight: 700; color: var(--coffee); margin: 0 0 14px; }
         .sr-info {
-          display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px;
+          display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px;
           margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px dashed var(--line);
         }
-        .sr-info > div { display: flex; justify-content: space-between; align-items: baseline; }
-        .sr-info span { font-size: 12.5px; color: var(--faint); }
-        .sr-info b { font-size: 14px; color: var(--ink); font-weight: 700; text-align: right; }
         .sr-cross { grid-column: 1 / -1; }
-        .sr-cross b { font-size: 13px; }
+        .sr-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+        .sr-row span { font-size: 12.5px; color: var(--faint); }
+        .sr-row b { font-size: 14px; color: var(--ink); font-weight: 700; text-align: right; }
+        .sr-item .sr-desc { font-size: 12px; color: var(--faint); line-height: 1.6; margin: 0; }
         .sr-sub { font-size: 13px; font-weight: 700; color: var(--terracotta); margin: 0 0 12px; }
         .sr-centers { display: flex; flex-direction: column; gap: 10px; }
         .sr-center {
@@ -217,6 +233,9 @@ function SimpleRead({ summary, emptyCenters }) {
         }
         .sr-cname { font-size: 12.5px; font-weight: 700; color: var(--sage); margin: 0 0 5px; }
         .sr-ctext { font-size: 13px; color: var(--ink); line-height: 1.8; margin: 0; }
+        @media (max-width: 480px) {
+          .sr-info { grid-template-columns: 1fr; }
+        }
       `}</style>
     </div>
   );
