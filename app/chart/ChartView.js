@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { ALL_CENTERS, CENTER_NAMES, CENTER_UNDEFINED_SUFFERING } from '../../lib/centerMeanings.js';
 
 export default function ChartView({ svg, svgFull, summary, label, birthLine, pngHref, birth, reportConfig }) {
   const [isMobile, setIsMobile] = useState(false);
@@ -16,6 +17,13 @@ export default function ChartView({ svg, svgFull, summary, label, birthLine, png
     [['類型', summary.type], ['人生角色', summary.profile], ['定義', summary.definition]],
     [['內在權威', summary.authority], ['策略', summary.strategy], ['非自己主題', summary.notSelf]],
   ];
+
+  const definedCenters = summary.centers || [];
+  const emptyCenters = ALL_CENTERS.filter((c) => !definedCenters.includes(c));
+
+  const simpleReadCard = (
+    <SimpleRead summary={summary} emptyCenters={emptyCenters} />
+  );
 
   const reportCard = reportConfig?.enabled !== false && birth ? (
     <ReportCTA reportConfig={reportConfig} birth={birth} />
@@ -39,6 +47,7 @@ export default function ChartView({ svg, svgFull, summary, label, birthLine, png
         </a>
         <a className="dl2" href={`${pngHref}&dl=1`}>下載到檔案</a>
 
+        {simpleReadCard}
         {reportCard}
 
         <nav className="nav">
@@ -112,6 +121,7 @@ export default function ChartView({ svg, svgFull, summary, label, birthLine, png
 
           <a className="dl" href={`${pngHref}&dl=1`} download>下載人類圖</a>
 
+          {simpleReadCard}
           {reportCard}
         </div>
       </section>
@@ -154,6 +164,61 @@ export default function ChartView({ svg, svgFull, summary, label, birthLine, png
         .dl:disabled { opacity: .6; cursor: default; }
       `}</style>
     </main>
+  );
+}
+
+function SimpleRead({ summary, emptyCenters }) {
+  return (
+    <div className="simple-read">
+      <p className="sr-h">你的簡單解圖</p>
+
+      <div className="sr-info">
+        <div><span>類型</span><b>{summary.type}</b></div>
+        <div><span>人生角色</span><b>{summary.profile}</b></div>
+        <div><span>定義</span><b>{summary.definition}</b></div>
+        <div><span>內在權威</span><b>{summary.authority}</b></div>
+        <div className="sr-cross"><span>輪迴交叉</span><b>{summary.cross}</b></div>
+      </div>
+
+      {emptyCenters.length > 0 && (
+        <>
+          <p className="sr-sub">最容易受苦的地方 —— 你的空白中心</p>
+          <div className="sr-centers">
+            {emptyCenters.map((c) => (
+              <div key={c} className="sr-center">
+                <p className="sr-cname">{CENTER_NAMES[c]}</p>
+                <p className="sr-ctext">{CENTER_UNDEFINED_SUFFERING[c]}</p>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      <style jsx>{`
+        .simple-read {
+          margin-top: 18px; padding: 20px; border-radius: 12px;
+          background: var(--paper); border: 1px solid var(--line);
+          text-align: left;
+        }
+        .sr-h { font-size: 16px; font-weight: 700; color: var(--coffee); margin: 0 0 14px; }
+        .sr-info {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px;
+          margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px dashed var(--line);
+        }
+        .sr-info > div { display: flex; justify-content: space-between; align-items: baseline; }
+        .sr-info span { font-size: 12.5px; color: var(--faint); }
+        .sr-info b { font-size: 14px; color: var(--ink); font-weight: 700; text-align: right; }
+        .sr-cross { grid-column: 1 / -1; }
+        .sr-cross b { font-size: 13px; }
+        .sr-sub { font-size: 13px; font-weight: 700; color: var(--terracotta); margin: 0 0 12px; }
+        .sr-centers { display: flex; flex-direction: column; gap: 10px; }
+        .sr-center {
+          background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 12px 14px;
+        }
+        .sr-cname { font-size: 12.5px; font-weight: 700; color: var(--sage); margin: 0 0 5px; }
+        .sr-ctext { font-size: 13px; color: var(--ink); line-height: 1.8; margin: 0; }
+      `}</style>
+    </div>
   );
 }
 
