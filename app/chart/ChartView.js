@@ -207,7 +207,7 @@ function SimpleRead({ summary, emptyCenters, data }) {
           <div className="sr-centers">
             {emptyCenters.map((c) => (
               <div key={c} className="sr-center">
-                <p className="sr-label">{CENTER_NAMES[c]}</p>
+                <p className="sr-fvalue sr-cname">{CENTER_NAMES[c]}</p>
                 <p className="sr-desc">{centerSuffering[c]}</p>
               </div>
             ))}
@@ -231,6 +231,7 @@ function SimpleRead({ summary, emptyCenters, data }) {
         .sr-row { margin: 0 0 6px; }
         .sr-flabel { font-size: 14px; color: var(--ink); }
         .sr-fvalue { font-size: 15px; color: var(--ink); font-weight: 700; }
+        .sr-cname { display: block; margin: 0 0 5px; }
         /* 內文層級：說明文字，統一字級 */
         .sr-desc {
           font-size: 13.5px; color: var(--ink); line-height: 1.75; margin: 0;
