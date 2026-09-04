@@ -8,7 +8,7 @@ export const metadata = { title: '今日流日 — 人類圖' };
 
 export default async function TransitPage() {
   const now = new Date();
-  const { svg, P, info } = transitChart(now, '今日流日');
+  const { svg, P, info } = transitChart(now, '');
   const sun = P['太陽'];
   const stamp = taipeiNowString(now);
   logUsage({ kind: 'transit', uid: visitorId(headers()) });
