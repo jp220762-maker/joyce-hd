@@ -159,37 +159,18 @@ export default function ChartView({ svg, svgFull, summary, label, birthLine, png
 
 function ReportCTA({ reportConfig, birth }) {
   const [email, setEmail] = useState('');
-  const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [showForm, setShowForm] = useState(false);
 
-  async function buy() {
-    setErr('');
+  function onSubmit(e) {
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      e.preventDefault();
       setErr('請輸入正確的 Email，報告會用這個信箱記錄訂單。');
       return;
     }
-    setBusy(true);
-    try {
-      const res = await fetch('/api/report/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...birth, email }),
-      });
-      if (res.headers.get('content-type')?.includes('text/html')) {
-        const html = await res.text();
-        const w = document.open('', '_self');
-        w.document.write(html);
-        w.document.close();
-        return;
-      }
-      const d = await res.json();
-      setErr(d.error || '建立訂單失敗，請稍後再試。');
-      setBusy(false);
-    } catch {
-      setErr('連線發生問題，請稍後再試。');
-      setBusy(false);
-    }
+    setErr('');
+    // 驗證通過後，讓表單以真正的瀏覽器導轉方式送出（而非用 JS 模擬），
+    // 這樣綠界回傳的自動送出付款頁才能穩定執行。
   }
 
   return (
@@ -213,15 +194,23 @@ function ReportCTA({ reportConfig, birth }) {
       {!showForm ? (
         <button className="rc-buy" onClick={() => setShowForm(true)}>解鎖我的專屬報告</button>
       ) : (
-        <div className="rc-form">
+        <form className="rc-form" method="POST" action="/api/report/create-order" onSubmit={onSubmit}>
+          <input type="hidden" name="year" value={birth.year} />
+          <input type="hidden" name="month" value={birth.month} />
+          <input type="hidden" name="day" value={birth.day} />
+          <input type="hidden" name="hour" value={birth.hour} />
+          <input type="hidden" name="minute" value={birth.minute} />
+          <input type="hidden" name="tz" value={birth.tz} />
+          <input type="hidden" name="city" value={birth.city || ''} />
+          <input type="hidden" name="name" value={birth.name || ''} />
           <input
-            type="email" placeholder="輸入 Email 接收報告"
+            type="email" name="email" placeholder="輸入 Email 接收報告"
             value={email} onChange={(e) => setEmail(e.target.value)}
           />
-          <button className="rc-buy" onClick={buy} disabled={busy}>
-            {busy ? '前往付款中…' : `付款 NT$${reportConfig.price || 99} 並生成`}
+          <button className="rc-buy" type="submit">
+            付款 NT${reportConfig.price || 99} 並生成
           </button>
-        </div>
+        </form>
       )}
       {err && <p className="rc-err">{err}</p>}
 

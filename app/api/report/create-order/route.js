@@ -13,9 +13,21 @@ function genOrderId() {
 
 function pad(n) { return String(n).padStart(2, '0'); }
 
+function errorPage(message, status) {
+  const html = `<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<title>無法建立訂單</title></head>
+<body style="font-family:'Noto Serif TC',serif;max-width:520px;margin:80px auto;padding:0 20px;color:#443A31;text-align:center;">
+<h1 style="font-size:22px;">無法建立訂單</h1>
+<p style="color:#C1704F;font-size:15px;line-height:1.9;">${message}</p>
+<p><a href="javascript:history.back()" style="color:#5C4A3A;">← 返回上一頁</a></p>
+</body></html>`;
+  return new NextResponse(html, { status, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+}
+
 export async function POST(req) {
   try {
-    const b = await req.json();
+    const form = await req.formData();
+    const b = Object.fromEntries(form.entries());
     const year = +b.year, month = +b.month, day = +b.day;
     const hour = +b.hour, minute = +b.minute;
     const tz = String(b.tz || 'Asia/Taipei');
@@ -26,16 +38,16 @@ export async function POST(req) {
     if (!(year >= 1900 && year <= 2030) ||
         !(month >= 1 && month <= 12) || !(day >= 1 && day <= 31) ||
         !(hour >= 0 && hour <= 23) || !(minute >= 0 && minute <= 59)) {
-      return NextResponse.json({ error: '出生資料不完整或格式有誤，請回到排盤頁重新產生。' }, { status: 400 });
+      return errorPage('出生資料不完整或格式有誤，請回到排盤頁重新產生。', 400);
     }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-      return NextResponse.json({ error: '請輸入正確的 Email，報告會寄送到這個信箱並可在這裡下載。' }, { status: 400 });
+      return errorPage('請輸入正確的 Email，報告會寄送到這個信箱並可在這裡下載。', 400);
     }
 
     const c = await getContent();
     const cfg = c.chartReport || {};
     if (cfg.enabled === false) {
-      return NextResponse.json({ error: '解圖報告目前暫停提供。' }, { status: 403 });
+      return errorPage('解圖報告目前暫停提供。', 403);
     }
     const price = Math.max(1, Math.round(Number(cfg.price) || 99));
 
@@ -43,7 +55,7 @@ export async function POST(req) {
     const hashKey = process.env.ECPAY_HASH_KEY;
     const hashIv = process.env.ECPAY_HASH_IV;
     if (!merchantId || !hashKey || !hashIv) {
-      return NextResponse.json({ error: '金流尚未設定完成，請稍後再試或聯繫網站管理者。' }, { status: 503 });
+      return errorPage('金流尚未設定完成，請稍後再試或聯繫網站管理者。', 503);
     }
 
     // 伺服器端重新計算命盤，不信任前端傳來的排盤結果
@@ -95,6 +107,6 @@ export async function POST(req) {
     return new NextResponse(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: '建立訂單時發生問題（除錯中）：' + String(e?.message || e) }, { status: 500 });
+    return errorPage('建立訂單時發生問題：' + String(e?.message || e), 500);
   }
 }
