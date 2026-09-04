@@ -25,6 +25,7 @@ export default function ContentManager({ adminKey }) {
           chartReport: { enabled:true, price:99, heading:'', intro:'', bullets:[],
                          ctaText:'', ctaUrl:'', sampleEnabled:true, sampleLabel:'',
                          sampleShowBirth:false, sampleBirthLine:'', sampleText:'', ...(x.chartReport||{}) },
+          simpleRead: { typeDesc:{}, profileDesc:{}, definitionDesc:{}, authorityDesc:{}, centerSuffering:{}, ...(x.simpleRead||{}) },
           contact: { email:'', line:'', social:[], ...(x.contact||{}) },
         });
       });
@@ -63,6 +64,7 @@ export default function ContentManager({ adminKey }) {
     ['services', '服務項目'],
     ['layout', '首頁排版'],
     ['report', '解圖報告'],
+    ['simpleread', '簡單解圖'],
     ['faq', '常見問題'],
     ['booking', '預約設定'],
     ['contact', '聯絡與社群'],
@@ -423,6 +425,22 @@ export default function ContentManager({ adminKey }) {
         </div>
       )}
 
+      {sec === 'simpleread' && (
+        <div className="pane">
+          <p className="sub">
+            排盤結果頁「簡單解圖」區塊使用的固定說明文字（純樣板組裝，非 AI 生成）。
+            每一項建議控制在 50 字內，方便手機閱讀。
+          </p>
+          <SimpleReadGroup title="類型（5 種）" fieldKey="typeDesc" c={c} up={up} />
+          <SimpleReadGroup title="人生角色（12 種）" fieldKey="profileDesc" c={c} up={up} />
+          <SimpleReadGroup title="定義（5 種）" fieldKey="definitionDesc" c={c} up={up} />
+          <SimpleReadGroup title="內在權威（7 種）" fieldKey="authorityDesc" c={c} up={up} />
+          <SimpleReadGroup title="空白中心受苦之處（9 個中心）" fieldKey="centerSuffering" c={c} up={up}
+            keyLabels={{ '頭':'頭腦中心','腦':'邏輯中心','喉':'喉嚨中心','G':'G中心','心':'意志力中心',
+                         '情緒':'情緒中心','直覺':'直覺中心','薦骨':'薦骨中心','根':'根部中心' }} />
+        </div>
+      )}
+
       {sec === 'faq' && (
         <div className="pane">
           {(c.services.faq || []).map((f, i) => (
@@ -555,6 +573,58 @@ export default function ContentManager({ adminKey }) {
         .cm label > span {
           display: block; font-size: 13px; color: var(--faint);
           letter-spacing: 1px; margin-bottom: 6px;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function SimpleReadGroup({ title, fieldKey, c, up, keyLabels }) {
+  const [open, setOpen] = useState(true);
+  const data = c.simpleRead?.[fieldKey] || {};
+  const keys = Object.keys(data);
+
+  return (
+    <div className="srgroup">
+      <button className="srgrouphead" onClick={() => setOpen(!open)}>
+        <span>{title}</span>
+        <span className="srtoggle">{open ? '收合 ▲' : '展開 ▼'}</span>
+      </button>
+      {open && (
+        <div className="srgroupbody">
+          {keys.map((k) => (
+            <div key={k} className="srrow">
+              <span className="srkey">{keyLabels?.[k] || k}</span>
+              <textarea
+                rows={2}
+                value={data[k] || ''}
+                onChange={(e) => {
+                  const next = { ...data, [k]: e.target.value };
+                  up(['simpleRead', fieldKey], next);
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+      <style jsx>{`
+        .srgroup { margin-bottom: 14px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+        .srgrouphead {
+          width: 100%; display: flex; justify-content: space-between; align-items: center;
+          padding: 12px 16px; background: none; border: none; cursor: pointer;
+          font-family: inherit; font-size: 14px; font-weight: 700; color: var(--coffee);
+        }
+        .srtoggle { font-size: 12px; color: var(--faint); font-weight: 400; }
+        .srgroupbody { padding: 4px 16px 14px; border-top: 1px solid var(--line); }
+        .srrow { display: grid; grid-template-columns: 90px 1fr; gap: 10px; align-items: start; margin-top: 12px; }
+        .srkey { font-size: 13px; font-weight: 700; color: var(--terracotta); padding-top: 8px; }
+        .srrow textarea {
+          width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 13px;
+          border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--ink);
+          font-family: inherit; line-height: 1.6; resize: vertical;
+        }
+        @media (max-width: 600px) {
+          .srrow { grid-template-columns: 1fr; }
         }
       `}</style>
     </div>

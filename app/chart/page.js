@@ -56,6 +56,7 @@ export default async function ChartPage({ searchParams }) {
       pngHref={`/api/png?y=${year}&m=${month}&d=${day}&h=${hour}&mi=${minute}&tz=${encodeURIComponent(tz)}&name=${encodeURIComponent(name)}`}
       birth={{ year, month, day, hour, minute, tz, city, name }}
       reportConfig={c.chartReport || {}}
+      simpleReadData={c.simpleRead || {}}
     />
   );
 }

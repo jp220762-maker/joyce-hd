@@ -1,9 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { ALL_CENTERS, CENTER_NAMES, CENTER_UNDEFINED_SUFFERING,
-         TYPE_DESC, PROFILE_DESC, DEFINITION_DESC, AUTHORITY_DESC } from '../../lib/centerMeanings.js';
+import { ALL_CENTERS, CENTER_NAMES } from '../../lib/centerMeanings.js';
 
-export default function ChartView({ svg, svgFull, summary, label, birthLine, pngHref, birth, reportConfig }) {
+export default function ChartView({ svg, svgFull, summary, label, birthLine, pngHref, birth, reportConfig, simpleReadData }) {
   const [isMobile, setIsMobile] = useState(false);
 
   // 判斷是否為手機／平板（含 iPadOS 偽裝成 Mac 的情況）
@@ -23,7 +22,7 @@ export default function ChartView({ svg, svgFull, summary, label, birthLine, png
   const emptyCenters = ALL_CENTERS.filter((c) => !definedCenters.includes(c));
 
   const simpleReadCard = (
-    <SimpleRead summary={summary} emptyCenters={emptyCenters} />
+    <SimpleRead summary={summary} emptyCenters={emptyCenters} data={simpleReadData || {}} />
   );
 
   const reportCard = reportConfig?.enabled !== false && birth ? (
@@ -168,35 +167,36 @@ export default function ChartView({ svg, svgFull, summary, label, birthLine, png
   );
 }
 
-function SimpleRead({ summary, emptyCenters }) {
+function SimpleRead({ summary, emptyCenters, data }) {
+  const typeDesc = data.typeDesc || {};
+  const profileDesc = data.profileDesc || {};
+  const definitionDesc = data.definitionDesc || {};
+  const authorityDesc = data.authorityDesc || {};
+  const centerSuffering = data.centerSuffering || {};
+
   return (
     <div className="simple-read">
       <p className="sr-title">你的簡單解圖</p>
 
       <div className="sr-info">
         <div className="sr-item">
-          <p className="sr-label">類型</p>
-          <p className="sr-value">{summary.type}</p>
-          <p className="sr-desc">{TYPE_DESC[summary.type]}</p>
+          <p className="sr-row"><span className="sr-flabel">類型</span> <b className="sr-fvalue">{summary.type}</b></p>
+          <p className="sr-desc">{typeDesc[summary.type]}</p>
         </div>
         <div className="sr-item">
-          <p className="sr-label">人生角色</p>
-          <p className="sr-value">{summary.profile}</p>
-          <p className="sr-desc">{PROFILE_DESC[summary.profile]}</p>
+          <p className="sr-row"><span className="sr-flabel">人生角色</span> <b className="sr-fvalue">{summary.profile}</b></p>
+          <p className="sr-desc">{profileDesc[summary.profile]}</p>
         </div>
         <div className="sr-item">
-          <p className="sr-label">定義</p>
-          <p className="sr-value">{summary.definition}</p>
-          <p className="sr-desc">{DEFINITION_DESC[summary.definition]}</p>
+          <p className="sr-row"><span className="sr-flabel">定義</span> <b className="sr-fvalue">{summary.definition}</b></p>
+          <p className="sr-desc">{definitionDesc[summary.definition]}</p>
         </div>
         <div className="sr-item">
-          <p className="sr-label">內在權威</p>
-          <p className="sr-value">{summary.authority}</p>
-          <p className="sr-desc">{AUTHORITY_DESC[summary.authority]}</p>
+          <p className="sr-row"><span className="sr-flabel">內在權威</span> <b className="sr-fvalue">{summary.authority}</b></p>
+          <p className="sr-desc">{authorityDesc[summary.authority]}</p>
         </div>
         <div className="sr-item">
-          <p className="sr-label">輪迴交叉</p>
-          <p className="sr-value">{summary.cross}</p>
+          <p className="sr-row"><span className="sr-flabel">輪迴交叉</span> <b className="sr-fvalue">{summary.cross}</b></p>
           {summary.crossExtra?.desc && <p className="sr-desc">{summary.crossExtra.desc}</p>}
         </div>
       </div>
@@ -208,7 +208,7 @@ function SimpleRead({ summary, emptyCenters }) {
             {emptyCenters.map((c) => (
               <div key={c} className="sr-center">
                 <p className="sr-label">{CENTER_NAMES[c]}</p>
-                <p className="sr-desc">{CENTER_UNDEFINED_SUFFERING[c]}</p>
+                <p className="sr-desc">{centerSuffering[c]}</p>
               </div>
             ))}
           </div>
@@ -221,17 +221,16 @@ function SimpleRead({ summary, emptyCenters }) {
           background: var(--paper); border: 1px solid var(--line);
           text-align: left;
         }
-        /* 標題層級：主標題／欄位標籤／子標題／中心名稱，統一橘色、統一字級 */
+        /* 標題層級：主標題／子標題／中心名稱，統一橘色、統一字級 */
         .sr-title, .sr-label {
           font-size: 14px; font-weight: 700; color: var(--terracotta);
           margin: 0 0 4px;
         }
         .sr-title { margin-bottom: 16px; }
-        /* 數值層級：實際結果，統一深色、統一字級，獨立一行 */
-        .sr-value {
-          font-size: 17px; font-weight: 700; color: var(--ink);
-          margin: 0 0 6px;
-        }
+        /* 基礎資訊欄：標籤＋數值同一行，皆為黑色，數值加粗 */
+        .sr-row { margin: 0 0 6px; }
+        .sr-flabel { font-size: 14px; color: var(--ink); }
+        .sr-fvalue { font-size: 15px; color: var(--ink); font-weight: 700; }
         /* 內文層級：說明文字，統一字級 */
         .sr-desc {
           font-size: 13.5px; color: var(--ink); line-height: 1.75; margin: 0;
