@@ -34,7 +34,10 @@ export default async function RootLayout({ children }) {
             <a href="/transit">今日流日</a>
             {c.contact?.email && (
               <a href={`mailto:${c.contact.email}`} className="mailicon" title={c.contact.email} aria-label="寄信聯絡">
-                ✉️
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6"/>
+                  <path d="M4 6.5L12 13L20 6.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </a>
             )}
           </div>
@@ -87,7 +90,8 @@ export default async function RootLayout({ children }) {
           }
           .sitenav .links a:hover { color: var(--coffee); }
           .sitenav .links .mailicon {
-            font-size: 17px; text-decoration: none; line-height: 1; display: inline-flex; align-items: center;
+            color: var(--coffee); text-decoration: none; line-height: 1;
+            display: inline-flex; align-items: center;
           }
           .sitefoot {
             max-width: 1060px; margin: 0 auto; padding: 32px 20px 40px;
