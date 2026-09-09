@@ -32,16 +32,16 @@ export default async function RootLayout({ children }) {
             <a href="/services">服務項目</a>
             <a href="/articles">文章</a>
             <a href="/transit">今日流日</a>
+            {c.contact?.email && (
+              <a href={`mailto:${c.contact.email}`} className="mailicon" title={c.contact.email} aria-label="寄信聯絡">
+                ✉️
+              </a>
+            )}
           </div>
         </nav>
         {children}
         <footer className="sitefoot">
           <p>{siteName} · Joyce 人類圖</p>
-          {c.contact?.email && (
-            <p className="footmail">
-              <a href={`mailto:${c.contact.email}`}>{c.contact.email}</a>
-            </p>
-          )}
           <a className="adm" href="/admin">管理</a>
         </footer>
         <style>{`
@@ -86,15 +86,15 @@ export default async function RootLayout({ children }) {
             letter-spacing: 1px;
           }
           .sitenav .links a:hover { color: var(--coffee); }
+          .sitenav .links .mailicon {
+            font-size: 17px; text-decoration: none; line-height: 1; display: inline-flex; align-items: center;
+          }
           .sitefoot {
             max-width: 1060px; margin: 0 auto; padding: 32px 20px 40px;
             border-top: 1px solid var(--line);
             display: flex; align-items: center; justify-content: space-between;
           }
           .sitefoot p { margin: 0; font-size: 13px; color: var(--faint); letter-spacing: 2px; }
-          .sitefoot .footmail { margin-top: 6px; letter-spacing: 1px; }
-          .sitefoot .footmail a { color: var(--faint); text-decoration: none; }
-          .sitefoot .footmail a:hover { color: var(--coffee); text-decoration: underline; }
           .sitefoot .adm { font-size: 11px; color: var(--line); text-decoration: none; letter-spacing: 2px; }
           .sitefoot .adm:hover { color: var(--faint); }
           @media (max-width: 620px) {
