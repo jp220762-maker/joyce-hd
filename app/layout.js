@@ -37,6 +37,11 @@ export default async function RootLayout({ children }) {
         {children}
         <footer className="sitefoot">
           <p>{siteName} · Joyce 人類圖</p>
+          {c.contact?.email && (
+            <p className="footmail">
+              <a href={`mailto:${c.contact.email}`}>{c.contact.email}</a>
+            </p>
+          )}
           <a className="adm" href="/admin">管理</a>
         </footer>
         <style>{`
@@ -87,6 +92,9 @@ export default async function RootLayout({ children }) {
             display: flex; align-items: center; justify-content: space-between;
           }
           .sitefoot p { margin: 0; font-size: 13px; color: var(--faint); letter-spacing: 2px; }
+          .sitefoot .footmail { margin-top: 6px; letter-spacing: 1px; }
+          .sitefoot .footmail a { color: var(--faint); text-decoration: none; }
+          .sitefoot .footmail a:hover { color: var(--coffee); text-decoration: underline; }
           .sitefoot .adm { font-size: 11px; color: var(--line); text-decoration: none; letter-spacing: 2px; }
           .sitefoot .adm:hover { color: var(--faint); }
           @media (max-width: 620px) {
