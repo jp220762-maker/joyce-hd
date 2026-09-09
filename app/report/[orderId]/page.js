@@ -52,6 +52,9 @@ export default async function ReportResultPage({ params }) {
           你的付款已經確認成功，但生成報告時遇到技術問題。請透過網站上的聯絡方式與 Joyce 聯繫，
           提供訂單編號 <b>{params.orderId}</b>，會盡快為你手動處理。
         </p>
+        <p className="sub" style={{ color: '#C1704F', fontSize: 12, wordBreak: 'break-all' }}>
+          （除錯用）錯誤內容：{order.error || '(無記錄)'}
+        </p>
       </>
     );
   } else if (order.status === 'failed') {
