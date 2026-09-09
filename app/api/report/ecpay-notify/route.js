@@ -22,8 +22,7 @@ function verifyMac(paramsObj, hashKey, hashIv) {
 async function generateReportText({ P, D, summary, birth }) {
   const gatesData = DEFAULT_TRANSIT_LINES.gates;
   const { system, user } = buildReportMessages({
-    P: Object.fromEntries(P.map((x) => [x.planet, x])),
-    D: Object.fromEntries(D.map((x) => [x.planet, x])),
+    P, D,
     info: summary,
     gatesData,
     name: birth.name,
