@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getReportOrder, getReportOrdersByEmail } from '../../../../../lib/store.js';
+import { getReportOrder, getReportOrdersByEmail, backfillEmailIndex } from '../../../../../lib/store.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -21,6 +21,18 @@ export async function GET(req, { params }) {
   const masked = rawEmail
     ? rawEmail.replace(/^(.{2}).*(@.*)$/, (m, a, b) => `${a}***${b}`)
     : '(空)';
+
+  // 加上 &fix=1 這個參數時，把這筆訂單補寫進它 email 的查詢索引裡
+  // （用於補救「用信箱查詢訂單」這個功能上線之前就已經存在的舊訂單）
+  let fixResult = null;
+  if (new URL(req.url).searchParams.get('fix') === '1') {
+    try {
+      await backfillEmailIndex(orderId, rawEmail);
+      fixResult = { ok: true };
+    } catch (e) {
+      fixResult = { error: String(e.message || e) };
+    }
+  }
 
   // 直接用同一支查詢函式，實際測試用這個 email 查不查得回這筆訂單
   let lookupResult = null;
@@ -45,5 +57,6 @@ export async function GET(req, { params }) {
     createdAt: order.createdAt,
     lookupTestUsingThisEmail: lookupResult,
     hasKVConfigured: !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN),
+    fixResult,
   });
 }
