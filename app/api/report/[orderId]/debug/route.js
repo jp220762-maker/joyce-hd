@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getReportOrder } from '../../../../../lib/store.js';
+import { getReportOrder, getReportOrdersByEmail } from '../../../../../lib/store.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -22,6 +22,19 @@ export async function GET(req, { params }) {
     ? rawEmail.replace(/^(.{2}).*(@.*)$/, (m, a, b) => `${a}***${b}`)
     : '(空)';
 
+  // 直接用同一支查詢函式，實際測試用這個 email 查不查得回這筆訂單
+  let lookupResult = null;
+  try {
+    const found = await getReportOrdersByEmail(rawEmail);
+    lookupResult = {
+      count: found.length,
+      containsThisOrder: found.some((o) => o.orderId === orderId),
+      foundOrderIds: found.map((o) => o.orderId),
+    };
+  } catch (e) {
+    lookupResult = { error: String(e.message || e) };
+  }
+
   return NextResponse.json({
     orderId,
     status: order.status,
@@ -30,5 +43,7 @@ export async function GET(req, { params }) {
     emailNormalized: rawEmail.trim().toLowerCase().replace(/^(.{2}).*(@.*)$/, (m, a, b) => `${a}***${b}`),
     hasCharsOutsideAscii: /[^\x00-\x7F]/.test(rawEmail),
     createdAt: order.createdAt,
+    lookupTestUsingThisEmail: lookupResult,
+    hasKVConfigured: !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN),
   });
 }
