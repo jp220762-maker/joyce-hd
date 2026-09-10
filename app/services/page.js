@@ -35,23 +35,21 @@ export default async function ServicesPage() {
         ))}
       </section>
 
-      <section className="lookup">
-        <a href="/report" className="lookup-link">
-          已購買過解圖報告，忘記下載連結了嗎？點此用 Email 查詢我的報告 →
-        </a>
+      <section className="faq">
+        <h3>常見問題</h3>
+        {(c.services.faq || []).map((f, i) => (
+          <details key={i}>
+            <summary>{f.q}</summary>
+            <p>{f.a}</p>
+          </details>
+        ))}
+        <details>
+          <summary>已購買過解圖報告，忘記下載連結了嗎？</summary>
+          <p>
+            可以到<a href="/report">查詢我的報告</a>這個頁面，輸入購買時填寫的 Email，就能找回你的訂單並重新下載。
+          </p>
+        </details>
       </section>
-
-      {(c.services.faq?.length || 0) > 0 && (
-        <section className="faq">
-          <h3>常見問題</h3>
-          {(c.services.faq || []).map((f, i) => (
-            <details key={i}>
-              <summary>{f.q}</summary>
-              <p>{f.a}</p>
-            </details>
-          ))}
-        </section>
-      )}
 
       <nav className="foot">
         <a href="/about">← 關於我</a>
@@ -100,14 +98,6 @@ export default async function ServicesPage() {
         .embed iframe { width: 100%; height: 620px; border: 0; display: block; }
         .note { font-size: 14px; color: var(--faint); line-height: 2; margin: 0 0 22px; }
         .cform { max-width: 560px; margin: 0 auto; }
-
-        .lookup { margin-top: 32px; text-align: center; }
-        .lookup-link {
-          display: inline-block; font-size: 13.5px; color: var(--faint);
-          text-decoration: none; border-bottom: 1px dashed var(--line);
-          padding-bottom: 2px;
-        }
-        .lookup-link:hover { color: var(--coffee); border-color: var(--coffee); }
 
         .faq { margin-top: 56px; }
         details {
