@@ -7,7 +7,7 @@ import { DEFAULT_TRANSIT_LINES } from '../../../../../lib/transitLines.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 function authed(req) {
   const key = process.env.ADMIN_KEY || 'hd2026';
