@@ -6,7 +6,8 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
   try {
-    const { email } = await req.json();
+    const { email: rawEmail } = await req.json();
+    const email = String(rawEmail || '').trim().toLowerCase();
     if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
       return NextResponse.json({ error: '請輸入正確的 Email。' }, { status: 400 });
     }
