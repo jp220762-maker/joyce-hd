@@ -9,7 +9,6 @@ function authed(req) {
   return (new URL(req.url).searchParams.get('key') || '') === key;
 }
 
-// 管理者專用：暫時的除錯端點，用來確認某筆訂單實際存了什麼 email（不會回傳完整 email，只顯示遮罩過的版本）
 export async function GET(req, { params }) {
   if (!authed(req)) return NextResponse.json({ error: '未授權' }, { status: 401 });
 
