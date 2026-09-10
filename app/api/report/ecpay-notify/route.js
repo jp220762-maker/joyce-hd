@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getReportOrder, updateReportOrder, getContent, getLogoBytes } from '../../../../lib/store.js';
+import { getReportOrder, updateReportOrder, getContent } from '../../../../lib/store.js';
 import { buildReportMessages } from '../../../../lib/reportPrompt.js';
-import { buildReportPdf } from '../../../../lib/pdfReport.js';
-import { splitIntoSections } from '../../../../lib/reportSections.js';
 import { DEFAULT_TRANSIT_LINES } from '../../../../lib/transitLines.js';
 import { issueInvoice, invoiceConfigured } from '../../../../lib/ecpayInvoice.js';
 import { genCheckMacValue } from '../../../../lib/ecpayCheckout.js';
@@ -143,42 +141,16 @@ export async function POST(req) {
 
   try {
     const text = await generateReportText({ P: order.P, D: order.D, summary: order.summary, birth: order.birth });
-    const sections = splitIntoSections(text);
 
-    const c = await getContent();
-    const logoBytes = await getLogoBytes(c.site?.logoUrl);
-
-    const pad = (n) => String(n).padStart(2, '0');
-    const b = order.birth;
-    const birthLine = `${b.year}/${pad(b.month)}/${pad(b.day)} ${pad(b.hour)}:${pad(b.minute)}　${b.city || ''}`;
-
-    let chartImageBytes = null;
-    try {
-      const { natalChart } = await import('../../../../lib/chart.js');
-      const { renderChartPng } = await import('../../../../lib/chartImage.js');
-      const { svgFull } = natalChart({ ...b });
-      chartImageBytes = await renderChartPng(svgFull);
-    } catch (e) {
-      console.error('人體圖產生失敗，PDF 將不含圖表', e);
-    }
-
-    const pdfBuffer = await buildReportPdf({
-      title: `${b.name || '你'}的專屬解圖報告`,
-      subtitle: `${c.site?.name || 'J頁有光'}｜行星代表意義解圖法`,
-      birthLine,
-      sections,
-      logoBytes,
-      chartImageBytes,
-      footerNote: `© ${new Date().getFullYear()} ${c.site?.name || 'J頁有光'}`,
-    });
-
+    // 注意：PDF 不會在這裡先產生、也不會存進資料庫（檔案太大會超過資料庫單筆大小限制）。
+    // 這裡只存文字內容；使用者按下載時，/api/report/[orderId]/pdf 會現場用這段文字重新排版成 PDF。
     await updateReportOrder(orderId, {
       status: 'ready',
       reportText: text,
-      pdfBase64: pdfBuffer.toString('base64'),
       readyAt: new Date().toISOString(),
     });
 
+    const c = await getContent();
     const origin = new URL(req.url).origin;
     await sendReportEmail({
       to: order.email,
