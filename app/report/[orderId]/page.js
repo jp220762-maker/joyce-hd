@@ -41,7 +41,10 @@ export default async function ReportResultPage({ params }) {
         {order.invoiceNo && (
           <p className="inv">電子收據號碼：{order.invoiceNo}（{order.invoiceDate}）</p>
         )}
-        <p className="note">這個下載連結會持續有效，建議收到後盡快下載保存。</p>
+        <p className="note">
+          這個下載連結會持續有效，建議收到後盡快下載保存。之後想再找回這份報告，
+          可以到 <a href="/report">查詢我的報告</a> 用購買時的 Email 找回。
+        </p>
       </>
     );
   } else if (order.status === 'gen_failed') {
@@ -84,6 +87,7 @@ export default async function ReportResultPage({ params }) {
         .dl:hover { background: #a85c3f; }
         .inv { font-size: 13px; color: #A2937F; margin-bottom: 8px; }
         .note { font-size: 12.5px; color: #A2937F; }
+        .note a { color: #5C4A3A; }
         .back { display: inline-block; margin-top: 30px; font-size: 14px; color: #5C4A3A; }
       `}</style>
     </main>
