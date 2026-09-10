@@ -32,13 +32,18 @@ async function generateReportText({ P, D, summary, birth }) {
 }
 
 // 管理者專用：對已付款成功、但生成失敗的訂單重新嘗試生成報告
+// 網址加上 &force=1 可以強制重新產生，即使這筆訂單狀態已經是 ready（用於重新產生已完成但有問題的報告）
 export async function GET(req, { params }) {
   if (!authed(req)) return NextResponse.json({ error: '未授權' }, { status: 401 });
 
   const orderId = params.orderId;
   const order = await getReportOrder(orderId);
   if (!order) return NextResponse.json({ error: '找不到訂單' }, { status: 404 });
-  if (order.status === 'ready') return NextResponse.json({ ok: true, message: '此訂單已經生成完成，無需重試' });
+
+  const force = new URL(req.url).searchParams.get('force') === '1';
+  if (order.status === 'ready' && !force) {
+    return NextResponse.json({ ok: true, message: '此訂單已經生成完成，無需重試（如要強制重新產生，網址加上 &force=1）' });
+  }
   if (!order.paidAt) return NextResponse.json({ error: '此訂單尚未確認付款，不可重試' }, { status: 400 });
 
   await updateReportOrder(orderId, { status: 'generating', error: null });
