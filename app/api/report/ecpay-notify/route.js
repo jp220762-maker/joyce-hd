@@ -46,6 +46,13 @@ async function generateReportText({ P, D, summary, birth }) {
   }
   const data = await res.json();
   const text = (data.content || []).map((c) => c.text || '').join('\n');
+  if (!text || !text.trim()) {
+    const blockTypes = (data.content || []).map((c) => c.type).join(',') || '(無內容區塊)';
+    throw new Error(
+      `AI 回傳內容是空的。stop_reason=${data.stop_reason || '?'}，內容區塊類型=[${blockTypes}]，` +
+      `usage=${JSON.stringify(data.usage || {})}`
+    );
+  }
   return text;
 }
 
