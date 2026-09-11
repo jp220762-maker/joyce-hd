@@ -25,12 +25,12 @@ export async function GET() {
 
   const pdfBuffer = await buildReportPdf({
     title: '解圖報告（範例）',
-    subtitle: `${c.site?.name || 'J頁有光'}｜行星代表意義解圖法・${cfg.sampleLabel || ''}`,
+    subtitle: `${c.site?.name || 'J頁有光'}｜行星代表意義解圖法｜${cfg.sampleLabel || ''}`,
     birthLine: cfg.sampleShowBirth ? (cfg.sampleBirthLine || '') : '',
     sections,
     logoBytes,
     chartImageBytes,
-    footerNote: `© ${new Date().getFullYear()} ${c.site?.name || 'J頁有光'}・範例報告`,
+    footerNote: `© ${new Date().getFullYear()} ${c.site?.name || 'J頁有光'}｜範例報告`,
   });
 
   return new Response(pdfBuffer, {
