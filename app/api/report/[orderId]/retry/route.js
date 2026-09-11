@@ -22,7 +22,7 @@ async function generateReportText({ P, D, summary, birth }) {
       'x-api-key': process.env.ANTHROPIC_API_KEY,
       'anthropic-version': '2023-06-01',
     },
-    body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 4000, system, messages: [{ role: 'user', content: user }] }),
+    body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 16000, system, messages: [{ role: 'user', content: user }] }),
   });
   if (!res.ok) throw new Error('AI 生成失敗：' + (await res.text()).slice(0, 300));
   const data = await res.json();
