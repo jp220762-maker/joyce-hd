@@ -35,7 +35,7 @@ async function generateReportText({ P, D, summary, birth }) {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-5',
-      max_tokens: 4000,
+         max_tokens: 16000,
       system,
       messages: [{ role: 'user', content: user }],
     }),
