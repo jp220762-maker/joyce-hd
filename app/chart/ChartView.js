@@ -95,10 +95,6 @@ export default function ChartView({ svg, svgFull, summary, label, birthLine, png
     <main>
       <header className="top">
         <a className="back" href="/">← 重新排盤</a>
-        <div className="who">
-          <h1>{label}</h1>
-          <p>{birthLine}</p>
-        </div>
         <a className="link" href="/transit">今日流日 →</a>
       </header>
 
@@ -134,9 +130,6 @@ export default function ChartView({ svg, svgFull, summary, label, birthLine, png
         }
         .back, .link { font-size: 14px; text-decoration: none; white-space: nowrap; }
         .back:hover, .link:hover { text-decoration: underline; }
-        .who { text-align: center; }
-        h1 { font-size: 30px; font-weight: 700; margin: 0 0 6px; letter-spacing: 2px; }
-        .who p { margin: 0; font-size: 13px; color: var(--faint); letter-spacing: 1px; }
         .split { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: stretch; }
         .chart :global(svg) { width: 100%; height: auto; display: block; }
         .info { display: flex; flex-direction: column; gap: 14px; justify-content: center; }
